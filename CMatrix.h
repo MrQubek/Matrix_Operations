@@ -4,9 +4,11 @@
 #include<string>
 #include<cstdlib>
 #include<time.h>
+#include <random>
+#include <iostream>
 
 #include "const.h"
-#include <random>
+
 
 namespace MyAlgebra
 {
@@ -36,9 +38,9 @@ namespace MyAlgebra
 		CMatrix(const CMatrix& other);
 
 		CMatrix(CMatrix&& other);
-
+		
 		~CMatrix();
-
+		
 		CMatrix createMatrix(int rowCnt, int colCnt, bool randInit = false) {
 			return std::move(CMatrix(rowCnt, colCnt, randInit));
 		}
@@ -133,41 +135,21 @@ namespace MyAlgebra
 		// =========================================================================
 
 		bool readMatrixFromFile(std::string fileName);
-
+		
 		// only for tests - display matrix by rows on stdout
 		void display() const;
 
 		// friend CMtx operator*( T multiplier, const CMtx &rhs );
 	};
 
-	template <typename T>
-	CMatrix<T> operator*(T multiplier, const CMatrix<T>& rhs);
+	//template <typename T>
+	//CMatrix<T> operator*(T multiplier, const CMatrix<T>& rhs);
 
 	// =========================================================================
 	// methods declarations
 	// =========================================================================
 
-	template <>
-	void CMatrix<int>::populateMatrixWithRandomNumbers() {
-		for (int i = 0; i < rowCount; i++) {
-			for (int j = 0; j < rowCount; j++) {
-				rowPtr[i][j] = rand() % (RANDOM_MAX_VALUE - RANDOM_MIN_VALUE) + RANDOM_MIN_VALUE;
-			}
-		}
-	}
 
-	template <typename T>
-	void CMatrix<T>::populateMatrixWithRandomNumbers() {
-
-		std::default_random_engine rndNrGenerator;
-		std::uniform_real_distribution<T> distribution(RANDOM_MIN_VALUE, RANDOM_MAX_VALUE);
-
-		for (int i = 0; i < rowCount; i++) {
-			for (int j = 0; j < rowCount; j++) {
-				rowPtr[i][j] = distribution(rndNrGenerator);
-			}
-		}
-	}
 
 	template <typename T>
 	CMatrix<T>::CMatrix(int rowCnt, int colCnt, bool randInit) {
@@ -190,12 +172,51 @@ namespace MyAlgebra
 				}
 			}
 
+			this->rowCount = rowCnt;
+			this->columnCount = colCnt;
+
 			if (randInit && rowPtr != nullptr) {
 				srand(time(0));
 				populateMatrixWithRandomNumbers();
 			}
 		}
 	}
+
+	template <typename T>
+	CMatrix<T>::~CMatrix() {
+		for (int i = 0; i < rowCount; i++) {
+			delete[] rowPtr[i];
+		}
+		delete[] rowPtr;
+	}
+
+	template <typename T>
+	void CMatrix<T>::display() const {
+		for (int i = 0, j = 0; i < rowCount; i++) {
+			for (j = 0; j < columnCount; j++) {
+				std::cout << rowPtr[i][j]<<SEPARATOR;
+			}
+			std::cout << std::endl;
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 
