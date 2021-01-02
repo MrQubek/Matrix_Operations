@@ -1,7 +1,12 @@
 #pragma once
 
 #include<utility>
-#include <string>
+#include<string>
+#include<cstdlib>
+#include<time.h>
+
+#include "const.h"
+#include <random>
 
 namespace MyAlgebra
 {
@@ -12,6 +17,8 @@ namespace MyAlgebra
 		T** rowPtr;
 		int     rowCount;
 		int     columnCount;
+
+		void populateMatrixWithRandomNumbers();
 
 	public:
 		static const float ALG_PRECISION;
@@ -135,10 +142,60 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T> operator*(T multiplier, const CMatrix<T>& rhs);
-}
 
-class CMatrix
-{
-};
+	// =========================================================================
+	// methods declarations
+	// =========================================================================
+
+	template <>
+	void CMatrix<int>::populateMatrixWithRandomNumbers() {
+		for (int i = 0; i < rowCount; i++) {
+			for (int j = 0; j < rowCount; j++) {
+				rowPtr[i][j] = rand() % (RANDOM_MAX_VALUE - RANDOM_MIN_VALUE) + RANDOM_MIN_VALUE;
+			}
+		}
+	}
+
+	template <typename T>
+	void CMatrix<T>::populateMatrixWithRandomNumbers() {
+
+		std::default_random_engine rndNrGenerator;
+		std::uniform_real_distribution<T> distribution(RANDOM_MIN_VALUE, RANDOM_MAX_VALUE);
+
+		for (int i = 0; i < rowCount; i++) {
+			for (int j = 0; j < rowCount; j++) {
+				rowPtr[i][j] = distribution(rndNrGenerator);
+			}
+		}
+	}
+
+	template <typename T>
+	CMatrix<T>::CMatrix(int rowCnt, int colCnt, bool randInit) {
+		rowPtr = new(std::nothrow) T * [rowCnt];
+
+		if (rowPtr != nullptr) {
+			for (int i = 0; i < rowCnt; i++) {
+				rowPtr[i] = new(std::nothrow) T[colCnt];
+
+				if (rowPtr[i] == nullptr) {
+					rowCount = 0;
+					columnCount = 0;
+
+					for (; i > 0; i--) {
+						delete[] rowPtr[i];
+					}
+					delete rowPtr;
+					rowPtr = nullptr;
+					i = rowCnt;// escape from loop
+				}
+			}
+
+			if (randInit && rowPtr != nullptr) {
+				srand(time(0));
+				populateMatrixWithRandomNumbers();
+			}
+		}
+	}
+}
 
 
