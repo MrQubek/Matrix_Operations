@@ -35,6 +35,8 @@ namespace MyAlgebra
 
 		void moveOperation(CMatrix&& other);
 
+		void diagonalOperation(T diagonal);
+
 	public:
 		static const float ALG_PRECISION;
 
@@ -65,13 +67,13 @@ namespace MyAlgebra
 		const CMatrix& operator=(const CMatrix& other);
 		const CMatrix& assignMatrix(const CMatrix& other);
 
-		// switch matrix to square diagonal matrix 
-		const CMatrix& operator=(T diagonal);
-		const CMatrix& toDiagonal(T diagonal);
-
 		// move operator
 		const CMatrix& operator=(CMatrix&& other);
 		const CMatrix& moveMatrix(CMatrix&& other);
+
+		// switch matrix to diagonal matrix 
+		const CMatrix& operator=(T diagonal);
+		const CMatrix& toDiagonal(T diagonal);
 
 		// =========================================================================
 		// indexing matrix
@@ -119,12 +121,10 @@ namespace MyAlgebra
 
 		// change sign of all elements of matrix
 		CMatrix operator-() const;
-
 		CMatrix unary() const;
 
 		// transponse matrix
 		CMatrix operator~() const;
-
 		CMatrix transponse() const;
 
 		// accept only power >= 0:
@@ -132,7 +132,6 @@ namespace MyAlgebra
 		//    power = 1  - return copy of matrix
 		//    power > 1  - return power of matrix
 		CMatrix operator^(int power) const;
-
 		CMatrix power(int power) const;
 
 		// dot product (iloczyn skalarny) A^T*B
@@ -140,7 +139,6 @@ namespace MyAlgebra
 
 		// compare matrix with accuracy to ALG_PRECISION
 		bool operator==(const CMatrix& rhs) const;
-
 		bool compareTo(const CMatrix& rhs) const;
 
 		// =========================================================================
@@ -241,6 +239,21 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
+	void CMatrix<T>::diagonalOperation(T diagonal) {
+		for (int i = 0, j = 0; i < rowCount; i++) {
+			for (j = 0; j < columnCount; j++) {
+				if (i == j) {
+					rowPtr[i][j] = diagonal;
+				}
+				else {
+					rowPtr[i][j] = 0;
+				}
+			}
+		}
+	}
+
+
+	template <typename T>
 	CMatrix<T>::CMatrix(int rowCnt, int colCnt, bool randInit) {
 
 		if (allocateMemory(rowCnt, colCnt)) {
@@ -313,17 +326,25 @@ namespace MyAlgebra
 
 	template <typename T>
 	const CMatrix<T>& CMatrix<T>::operator=(CMatrix<T>&& other) {
-
 		moveOperation(std::forward<CMatrix>(other));
-
 		return *this;
 	}
 
 	template <typename T>
 	const CMatrix<T>& CMatrix<T>::moveMatrix(CMatrix<T>&& other) {
-
 		moveOperation(std::forward<CMatrix>(other));
+		return *this;
+	}
 
+	template <typename T>
+	const CMatrix<T>& CMatrix<T>::operator=(T diagonal) {
+		diagonalOperation(diagonal);
+		return *this;
+	}
+
+	template <typename T>
+	const CMatrix<T>& CMatrix<T>::toDiagonal(T diagonal) {
+		diagonalOperation(diagonal);
 		return *this;
 	}
 
