@@ -20,7 +20,14 @@ namespace MyAlgebra
 		int     rowCount;
 		int     columnCount;
 
+		// return:	true if memory allocation for matrix successful
+		//			false otherwise
+		// warning: possible memory leaks if memory was already allocated
+		bool allocateMemory(int rowCnt, int colCnt);
+
 		void populateMatrixWithRandomNumbers();
+
+		void copyMatrixValues(const CMatrix& other);
 
 	public:
 		static const float ALG_PRECISION;
@@ -38,9 +45,9 @@ namespace MyAlgebra
 		CMatrix(const CMatrix& other);
 
 		CMatrix(CMatrix&& other);
-		
+
 		~CMatrix();
-		
+
 		CMatrix createMatrix(int rowCnt, int colCnt, bool randInit = false) {
 			return std::move(CMatrix(rowCnt, colCnt, randInit));
 		}
@@ -135,7 +142,7 @@ namespace MyAlgebra
 		// =========================================================================
 
 		bool readMatrixFromFile(std::string fileName);
-		
+
 		// only for tests - display matrix by rows on stdout
 		void display() const;
 
@@ -149,10 +156,14 @@ namespace MyAlgebra
 	// methods declarations
 	// =========================================================================
 
-
-
 	template <typename T>
-	CMatrix<T>::CMatrix(int rowCnt, int colCnt, bool randInit) {
+	bool CMatrix<T>::allocateMemory(int rowCnt, int colCnt) {
+
+		if (rowCnt < 0 || colCnt < 0) {
+			rowPtr = nullptr;
+			return false;
+		}
+
 		rowPtr = new(std::nothrow) T * [rowCnt];
 
 		if (rowPtr != nullptr) {
@@ -160,27 +171,87 @@ namespace MyAlgebra
 				rowPtr[i] = new(std::nothrow) T[colCnt];
 
 				if (rowPtr[i] == nullptr) {
-					rowCount = 0;
-					columnCount = 0;
-
 					for (; i > 0; i--) {
 						delete[] rowPtr[i];
 					}
 					delete rowPtr;
 					rowPtr = nullptr;
-					i = rowCnt;// escape from loop
+					return false;
 				}
 			}
+		}
+		return true;
+	}
 
-			this->rowCount = rowCnt;
-			this->columnCount = colCnt;
-
-			if (randInit && rowPtr != nullptr) {
-				srand(time(0));
-				populateMatrixWithRandomNumbers();
+	template <typename T>
+	void CMatrix<T>::copyMatrixValues(const CMatrix<T>& other) {
+		for (int i = 0, j = 0; i < other.columnCount; i++) {
+			for (j = 0; j < other.columnCount; j++) {
+				this->rowPtr[i][j] = other.rowPtr[i][j];
 			}
 		}
 	}
+
+
+
+	template <typename T>
+	CMatrix<T>::CMatrix(int rowCnt, int colCnt, bool randInit) {
+
+		if (allocateMemory(rowCnt, colCnt)) {
+			this->rowCount = rowCnt;
+			this->columnCount = colCnt;
+
+			if (randInit) {
+				srand((unsigned int)time(0));
+				populateMatrixWithRandomNumbers();
+			}
+		}
+		else {
+			this->rowCount = 0;
+			this->columnCount = 0;
+		}
+	}
+
+	template <typename T>
+	CMatrix<T>::CMatrix(int rowCnt, T diagonal) {
+
+		if (allocateMemory(rowCnt, rowCnt)) {
+			this->rowCount = rowCnt;
+			this->columnCount = rowCnt;
+
+			for (int i = 0, j = 0; i < rowCnt; i++) {
+				for (j = 0; j < rowCnt; j++) {
+					if (i == j) {
+						rowPtr[i][j] = diagonal;
+					}
+					else {
+						rowPtr[i][j] = 0;
+					}
+				}
+
+			}
+		}
+		else {
+			this->rowCount = 0;
+			this->columnCount = 0;
+		}
+	}
+
+	template <typename T>
+	CMatrix<T>::CMatrix(const CMatrix& other) {
+		if (allocateMemory(other.rowCount, other.columnCount)) {
+			this->rowCount = other.rowCount;
+			this->columnCount = other.columnCount;
+
+			copyMatrixValues(other);
+
+		}
+		else {
+			this->rowCount = 0;
+			this->columnCount = 0;
+		}
+	}
+
 
 	template <typename T>
 	CMatrix<T>::~CMatrix() {
@@ -194,7 +265,7 @@ namespace MyAlgebra
 	void CMatrix<T>::display() const {
 		for (int i = 0, j = 0; i < rowCount; i++) {
 			for (j = 0; j < columnCount; j++) {
-				std::cout << rowPtr[i][j]<<SEPARATOR;
+				std::cout << rowPtr[i][j] << SEPARATOR;
 			}
 			std::cout << std::endl;
 		}
@@ -210,13 +281,7 @@ namespace MyAlgebra
 
 
 
-
-
-
-
-
-
-
 }
+
 
 
