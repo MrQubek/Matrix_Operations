@@ -17,7 +17,27 @@ int main() {
 	mat->display();
 	mat2->display();
 
+	std::cout << TILDES << std::endl;
+
+	MyAlgebra::CMatrix<float>* mat3 = new MyAlgebra::CMatrix<float>(std::move(*mat2));
+
+	mat->display();
+	mat2->display();
+	std::cout << std::endl;
+	mat3->display();
+
+	std::cout << TILDES << std::endl;
+
+	*mat2 = std::move(*mat);
+
+	mat->display();
+	std::cout << std::endl;
+	mat2->display();
+	mat3->display();
+
 	delete mat;
+	delete mat2;
+	delete mat3;
 
 	_CrtDumpMemoryLeaks();
 

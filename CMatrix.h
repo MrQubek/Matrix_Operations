@@ -25,9 +25,13 @@ namespace MyAlgebra
 		// warning: possible memory leaks if memory was already allocated
 		bool allocateMemory(int rowCnt, int colCnt);
 
+		void deallocateMemory();
+
 		void populateMatrixWithRandomNumbers();
 
 		void copyMatrixValues(const CMatrix& other);
+
+		void moveOperation(CMatrix&& other);
 
 	public:
 		static const float ALG_PRECISION;
@@ -184,6 +188,14 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
+	void CMatrix<T>::deallocateMemory() {
+		for (int i = 0; i < rowCount; i++) {
+			delete[] rowPtr[i];
+		}
+		delete[] rowPtr;
+	}
+
+	template <typename T>
 	void CMatrix<T>::copyMatrixValues(const CMatrix<T>& other) {
 		for (int i = 0, j = 0; i < other.columnCount; i++) {
 			for (j = 0; j < other.columnCount; j++) {
@@ -192,7 +204,24 @@ namespace MyAlgebra
 		}
 	}
 
+	template <typename T>
+	void CMatrix<T>::moveOperation(CMatrix&& other) {
 
+		if (this != &other) {
+
+			if (this->rowPtr != nullptr) {
+				deallocateMemory();
+			}
+
+			this->rowPtr = other.rowPtr;
+			this->rowCount = other.rowCount;
+			this->columnCount = other.columnCount;
+
+			other.rowPtr = nullptr;
+			other.rowCount = 0;
+			other.columnCount = 0;
+		}
+	}
 
 	template <typename T>
 	CMatrix<T>::CMatrix(int rowCnt, int colCnt, bool randInit) {
@@ -252,13 +281,23 @@ namespace MyAlgebra
 		}
 	}
 
+	template <typename T>
+	CMatrix<T>::CMatrix(CMatrix&& other) {
+
+		moveOperation(std::forward<CMatrix>(other));
+	}
 
 	template <typename T>
 	CMatrix<T>::~CMatrix() {
-		for (int i = 0; i < rowCount; i++) {
-			delete[] rowPtr[i];
-		}
-		delete[] rowPtr;
+		deallocateMemory();
+	}
+
+	template <typename T>
+	const CMatrix<T>& CMatrix<T>::operator=(CMatrix<T>&& other) {
+
+		moveOperation(std::forward<CMatrix>(other));
+
+		return *this;
 	}
 
 	template <typename T>

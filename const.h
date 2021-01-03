@@ -4,3 +4,5 @@
 #define RANDOM_MIN_VALUE 0
 
 #define SEPARATOR " "
+
+#define TILDES "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
