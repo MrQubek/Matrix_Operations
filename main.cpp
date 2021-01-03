@@ -35,6 +35,13 @@ int main() {
 	mat2->display();
 	mat3->display();
 
+	std::cout << TILDES << std::endl;
+
+	*mat = *mat2;
+	mat->display();
+	mat2->display();
+	mat3->display();
+
 	delete mat;
 	delete mat2;
 	delete mat3;

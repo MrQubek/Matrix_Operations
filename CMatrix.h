@@ -31,6 +31,8 @@ namespace MyAlgebra
 
 		void copyMatrixValues(const CMatrix& other);
 
+		void copyOperation(const CMatrix& other);
+
 		void moveOperation(CMatrix&& other);
 
 	public:
@@ -61,15 +63,15 @@ namespace MyAlgebra
 		// =========================================================================
 
 		const CMatrix& operator=(const CMatrix& other);
+		const CMatrix& assignMatrix(const CMatrix& other);
 
 		// switch matrix to square diagonal matrix 
 		const CMatrix& operator=(T diagonal);
-
 		const CMatrix& toDiagonal(T diagonal);
 
 		// move operator
 		const CMatrix& operator=(CMatrix&& other);
-
+		const CMatrix& moveMatrix(CMatrix&& other);
 
 		// =========================================================================
 		// indexing matrix
@@ -205,6 +207,21 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
+	void CMatrix<T>::copyOperation(const CMatrix& other) {
+		if (allocateMemory(other.rowCount, other.columnCount)) {
+			this->rowCount = other.rowCount;
+			this->columnCount = other.columnCount;
+
+			copyMatrixValues(other);
+
+		}
+		else {
+			this->rowCount = 0;
+			this->columnCount = 0;
+		}
+	}
+
+	template <typename T>
 	void CMatrix<T>::moveOperation(CMatrix&& other) {
 
 		if (this != &other) {
@@ -268,17 +285,7 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T>::CMatrix(const CMatrix& other) {
-		if (allocateMemory(other.rowCount, other.columnCount)) {
-			this->rowCount = other.rowCount;
-			this->columnCount = other.columnCount;
-
-			copyMatrixValues(other);
-
-		}
-		else {
-			this->rowCount = 0;
-			this->columnCount = 0;
-		}
+		copyOperation(other);
 	}
 
 	template <typename T>
@@ -293,7 +300,27 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
+	const CMatrix<T>& CMatrix<T>::operator=(const CMatrix& other) {
+		copyOperation(other);
+		return *this;
+	}
+
+	template <typename T>
+	const CMatrix<T>& CMatrix<T>::assignMatrix(const CMatrix& other) {
+		copyOperation(other);
+		return *this;
+	}
+
+	template <typename T>
 	const CMatrix<T>& CMatrix<T>::operator=(CMatrix<T>&& other) {
+
+		moveOperation(std::forward<CMatrix>(other));
+
+		return *this;
+	}
+
+	template <typename T>
+	const CMatrix<T>& CMatrix<T>::moveMatrix(CMatrix<T>&& other) {
 
 		moveOperation(std::forward<CMatrix>(other));
 
