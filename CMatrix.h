@@ -17,6 +17,7 @@ namespace MyAlgebra
 	{
 	private:
 		T** rowPtr;
+
 		int     rowCount;
 		int     columnCount;
 
@@ -36,6 +37,8 @@ namespace MyAlgebra
 		void moveOperation(CMatrix&& other);
 
 		void diagonalOperation(T diagonal);
+
+		CMatrix(T** newRowPtr, int rowCnt, int colCnt);
 
 	public:
 		static const float ALG_PRECISION;
@@ -79,9 +82,8 @@ namespace MyAlgebra
 		// indexing matrix
 		// =========================================================================
 
-		T* operator[](int row_ind);
-
-		T* getRow(int row_ind);
+		T* operator[](int row_ind) { return rowPtr[row_ind]; }
+		T* getRow(int row_ind) { return rowPtr[row_ind]; }
 
 		void set(int x, int y, T newVal) {
 			if (rowPtr != nullptr)rowPtr[x][y] = newVal;
@@ -178,7 +180,7 @@ namespace MyAlgebra
 					for (; i > 0; i--) {
 						delete[] rowPtr[i];
 					}
-					delete rowPtr;
+					delete[] rowPtr;
 					rowPtr = nullptr;
 					return false;
 				}
@@ -224,7 +226,7 @@ namespace MyAlgebra
 
 		if (this != &other) {
 
-			if (this->rowPtr != nullptr) {
+			if (this->rowPtr != nullptr && (rowCount == 0 || columnCount == 0)) {
 				deallocateMemory();
 			}
 
@@ -240,6 +242,7 @@ namespace MyAlgebra
 
 	template <typename T>
 	void CMatrix<T>::diagonalOperation(T diagonal) {
+
 		for (int i = 0, j = 0; i < rowCount; i++) {
 			for (j = 0; j < columnCount; j++) {
 				if (i == j) {
@@ -252,9 +255,18 @@ namespace MyAlgebra
 		}
 	}
 
+	template <typename T>
+	CMatrix<T>::CMatrix(T** newRowPtr, int rowCnt, int colCnt) {
+		//to do: add exceptions
+
+		rowPtr = newRowPtr;
+		rowCount = rowCnt;
+		columnCount = colCnt;
+	}
 
 	template <typename T>
 	CMatrix<T>::CMatrix(int rowCnt, int colCnt, bool randInit) {
+		//to do: add exceptions
 
 		if (allocateMemory(rowCnt, colCnt)) {
 			this->rowCount = rowCnt;
@@ -273,6 +285,7 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T>::CMatrix(int rowCnt, T diagonal) {
+		//to do: add exceptions
 
 		if (allocateMemory(rowCnt, rowCnt)) {
 			this->rowCount = rowCnt;
@@ -303,7 +316,6 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T>::CMatrix(CMatrix&& other) {
-
 		moveOperation(std::forward<CMatrix>(other));
 	}
 
@@ -346,6 +358,59 @@ namespace MyAlgebra
 	const CMatrix<T>& CMatrix<T>::toDiagonal(T diagonal) {
 		diagonalOperation(diagonal);
 		return *this;
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::getRowVector(int rowIndex) {
+		//to do: add exceptions
+
+		T** newRowPtr = new(std::nothrow) T * [1];
+		if (newRowPtr != nullptr) {
+			newRowPtr[0] = new(std::nothrow) T[columnCount];
+
+			if (newRowPtr[0] != nullptr) {
+				CMatrix retMatrix(newRowPtr, 1, columnCount);
+				for (int i = 0; i < columnCount; i++) {
+					retMatrix.set(0, i, this->rowPtr[rowIndex][i]);
+				}
+				return std::move(retMatrix);
+			}
+			else {
+				delete[] newRowPtr;
+			}
+		}
+		return std::move(CMatrix(nullptr, 0, 0));
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::getColumnVector(int columnIndex) {
+		//to do: add exceptions
+
+		T** newColumnPtr = new(std::nothrow) T * [rowCount];
+		if (newColumnPtr != nullptr) {
+			int i = 0;
+			for (; i < rowCount; i++)
+			{
+				newColumnPtr[i] = new T[1];
+				if (newColumnPtr[i] == nullptr) {
+					for (; i > 0; i--) {
+						delete[] newColumnPtr[i];
+					}
+					delete[] newColumnPtr;
+					return std::move(CMatrix(nullptr, 0, 0));
+				}
+			}
+
+			CMatrix retMatrix(newColumnPtr, rowCount, 1);
+			for (i = 0; i < rowCount; i++)
+			{
+				retMatrix.set(i, 0, this->rowPtr[i][columnIndex]);
+			}
+			return std::move(retMatrix);
+		}
+		else {
+			return std::move(CMatrix(nullptr, 0, 0));
+		}
 	}
 
 	template <typename T>

@@ -42,6 +42,19 @@ int main() {
 	mat2->display();
 	mat3->display();
 
+	std::cout << TILDES << std::endl;
+	{
+	MyAlgebra::CMatrix<float> kol = mat->getColumnVector(0);
+	kol.display();
+	MyAlgebra::CMatrix<float> row = mat->getRowVector(1);
+	row.display();
+
+	MyAlgebra::CMatrix<float>(3, 3, true).display();
+
+	(mat->getColumnVector(0)).display(); //ask about it
+
+	}
+
 	delete mat;
 	delete mat2;
 	delete mat3;
