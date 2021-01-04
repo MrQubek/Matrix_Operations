@@ -164,7 +164,7 @@ namespace MyAlgebra
 
 	template <typename T>
 	bool CMatrix<T>::allocateMemory(int rowCnt, int colCnt) {
-
+		//to do: add exceprions
 		if (rowCnt < 0 || colCnt < 0) {
 			rowPtr = nullptr;
 			return false;
@@ -224,20 +224,14 @@ namespace MyAlgebra
 	template <typename T>
 	void CMatrix<T>::moveOperation(CMatrix&& other) {
 
-		if (this != &other) {
+		this->rowPtr = other.rowPtr;
+		this->rowCount = other.rowCount;
+		this->columnCount = other.columnCount;
 
-			if (this->rowPtr != nullptr && (rowCount == 0 || columnCount == 0)) {
-				deallocateMemory();
-			}
+		other.rowPtr = nullptr;
+		other.rowCount = 0;
+		other.columnCount = 0;
 
-			this->rowPtr = other.rowPtr;
-			this->rowCount = other.rowCount;
-			this->columnCount = other.columnCount;
-
-			other.rowPtr = nullptr;
-			other.rowCount = 0;
-			other.columnCount = 0;
-		}
 	}
 
 	template <typename T>
@@ -326,25 +320,46 @@ namespace MyAlgebra
 
 	template <typename T>
 	const CMatrix<T>& CMatrix<T>::operator=(const CMatrix& other) {
-		copyOperation(other);
+		if (this != &other) {
+			if (this->rowPtr != nullptr) {
+				deallocateMemory();
+			}
+			copyOperation(other);
+		}
 		return *this;
 	}
 
 	template <typename T>
 	const CMatrix<T>& CMatrix<T>::assignMatrix(const CMatrix& other) {
-		copyOperation(other);
+		if (this != &other) {
+			if (this->rowPtr != nullptr) {
+				deallocateMemory();
+			}
+			copyOperation(other);
+		}
 		return *this;
 	}
 
 	template <typename T>
 	const CMatrix<T>& CMatrix<T>::operator=(CMatrix<T>&& other) {
-		moveOperation(std::forward<CMatrix>(other));
+
+		if (this != &other) {
+			if (this->rowPtr != nullptr) {
+				deallocateMemory();
+			}
+			moveOperation(std::forward<CMatrix>(other));
+		}
 		return *this;
 	}
 
 	template <typename T>
 	const CMatrix<T>& CMatrix<T>::moveMatrix(CMatrix<T>&& other) {
-		moveOperation(std::forward<CMatrix>(other));
+		if (this != &other) {
+			if (this->rowPtr != nullptr) {
+				deallocateMemory();
+			}
+			moveOperation(std::forward<CMatrix>(other));
+		}
 		return *this;
 	}
 

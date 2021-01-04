@@ -43,6 +43,10 @@ int main() {
 	mat3->display();
 
 	std::cout << TILDES << std::endl;
+
+	mat3->toDiagonal(4.5).display();
+	(*mat3 = 2.5).display();
+	std::cout << TILDES << std::endl;
 	{
 	MyAlgebra::CMatrix<float> kol = mat->getColumnVector(0);
 	kol.display();
