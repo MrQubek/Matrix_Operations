@@ -37,7 +37,7 @@ int main() {
 
 	std::cout << TILDES << std::endl;
 
-	*mat = *mat2;
+	*mat3 = *mat2;
 	mat->display();
 	mat2->display();
 	mat3->display();
@@ -57,6 +57,11 @@ int main() {
 
 	(mat->getColumnVector(0)).display(); //ask about it
 
+	}
+
+	std::cout << TILDES << std::endl;
+	{
+		(*mat3 * 4.5).display();
 	}
 
 	delete mat;

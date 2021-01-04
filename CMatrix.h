@@ -38,6 +38,8 @@ namespace MyAlgebra
 
 		void diagonalOperation(T diagonal);
 
+		CMatrix<T>& multiplyConstantOperation(T multiplier);
+
 		CMatrix(T** newRowPtr, int rowCnt, int colCnt);
 
 	public:
@@ -55,7 +57,7 @@ namespace MyAlgebra
 
 		CMatrix(const CMatrix& other);
 
-		CMatrix(CMatrix&& other);
+		CMatrix(CMatrix&& other) noexcept;
 
 		~CMatrix();
 
@@ -71,7 +73,7 @@ namespace MyAlgebra
 		const CMatrix& assignMatrix(const CMatrix& other);
 
 		// move operator
-		const CMatrix& operator=(CMatrix&& other);
+		const CMatrix& operator=(CMatrix&& other)noexcept;
 		const CMatrix& moveMatrix(CMatrix&& other);
 
 		// switch matrix to diagonal matrix 
@@ -248,6 +250,16 @@ namespace MyAlgebra
 			}
 		}
 	}
+	template <typename T>
+	CMatrix<T>& CMatrix<T>::multiplyConstantOperation(T multiplier) {
+		for (int i = 0, j; i < rowCount; i++) {
+			for (j = 0; j < columnCount; j++) {
+				rowPtr[i][j] *= multiplier;
+			}
+		}
+		return *this;
+	}
+
 
 	template <typename T>
 	CMatrix<T>::CMatrix(T** newRowPtr, int rowCnt, int colCnt) {
@@ -309,7 +321,7 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T>::CMatrix(CMatrix&& other) {
+	CMatrix<T>::CMatrix(CMatrix&& other) noexcept {
 		moveOperation(std::forward<CMatrix>(other));
 	}
 
@@ -341,7 +353,7 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	const CMatrix<T>& CMatrix<T>::operator=(CMatrix<T>&& other) {
+	const CMatrix<T>& CMatrix<T>::operator=(CMatrix<T>&& other) noexcept {
 
 		if (this != &other) {
 			if (this->rowPtr != nullptr) {
@@ -426,6 +438,15 @@ namespace MyAlgebra
 		else {
 			return std::move(CMatrix(nullptr, 0, 0));
 		}
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::operator*(T multiplier) const {
+		return std::move(CMatrix(*this).multiplyConstantOperation(multiplier));
+	}
+	template <typename T>
+	CMatrix<T> CMatrix<T>::multiply(T multiplier) const {
+		return std::move(CMatrix(*this).multiplyConstantOperation(multiplier));
 	}
 
 	template <typename T>
