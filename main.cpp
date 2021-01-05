@@ -94,6 +94,14 @@ int main() {
 
 	}
 
+	std::cout << TILDES << std::endl;
+	{
+		*mat = MyAlgebra::CMatrix<float>(2, 3,true);
+		mat->display();
+		(~(*mat)).display();
+		(mat->transponse()).display();
+	}
+
 	delete mat;
 	delete mat2;
 	delete mat3;

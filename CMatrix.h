@@ -46,6 +46,7 @@ namespace MyAlgebra
 
 		CMatrix<T>& unaryOperation();
 
+		CMatrix<T> transponseOperation() const;
 
 		CMatrix(T** newRowPtr, int rowCnt, int colCnt);
 
@@ -291,16 +292,31 @@ namespace MyAlgebra
 		}
 		return *this;
 	}
-	
+
 	template <typename T>
 	CMatrix<T>& CMatrix<T>::unaryOperation() {
-		for (int i = 0, j; i < rowCount;i++) {
+		for (int i = 0, j; i < rowCount; i++) {
 			for (j = 0; j < columnCount; j++) {
 				rowPtr[i][j] *= (-1);
 			}
 		}
 		return *this;
 	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::transponseOperation() const {
+		CMatrix<T> retMatrix(this->columnCount,this->rowCount);
+
+		if (retMatrix.getRowCount() > 0 && retMatrix.getColumnCount() > 0) {
+			for (int i = 0, j; i < rowCount; i++) {
+				for (j = 0; j < columnCount; j++) {
+					retMatrix[j][i] = this->rowPtr[i][j];
+				}
+			}
+		}
+		return std::move(retMatrix);
+	}
+
 
 	template <typename T>
 	CMatrix<T>::CMatrix(T** newRowPtr, int rowCnt, int colCnt) {
@@ -492,7 +508,7 @@ namespace MyAlgebra
 			for (int i = 0, j, r; i < retMatrix.getRowCount(); i++) {
 				for (j = 0; j < retMatrix.getColumnCount(); j++) {
 					for (r = 0, fieldSum = 0; r < this->columnCount; r++) {
-						fieldSum += + rowPtr[i][r] * other.rowPtr[r][j];
+						fieldSum += +rowPtr[i][r] * other.rowPtr[r][j];
 					}
 					retMatrix[i][j] = fieldSum;
 				}
@@ -502,7 +518,7 @@ namespace MyAlgebra
 	}
 	template <typename T>
 	CMatrix<T> CMatrix<T>::multiply(const CMatrix& other) const {
-		return std::move(*this*other);
+		return std::move(*this * other);
 	}
 
 	template <typename T>
@@ -541,6 +557,16 @@ namespace MyAlgebra
 	template <typename T>
 	CMatrix<T> CMatrix<T>::unary() const {
 		return std::move(CMatrix(*this).unaryOperation());
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::operator~() const {
+		return std::move(this->transponseOperation());
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::transponse() const {
+		return std::move(this->transponseOperation());
 	}
 
 	template <typename T>
