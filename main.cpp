@@ -64,6 +64,19 @@ int main() {
 		(*mat3 * 4.5).display();
 	}
 
+	std::cout << TILDES << std::endl;
+	{
+		mat2->display();
+		mat3->display();
+		(*mat2 * (*mat3)).display();
+		(mat2->multiply(*mat3)).display();
+	}
+	std::cout << TILDES << std::endl;
+	{
+
+	}
+
+
 	delete mat;
 	delete mat2;
 	delete mat3;

@@ -40,6 +40,8 @@ namespace MyAlgebra
 
 		CMatrix<T>& multiplyConstantOperation(T multiplier);
 
+		CMatrix<T> multiplyMatrixOperation(const CMatrix<T> & other);
+
 		CMatrix(T** newRowPtr, int rowCnt, int colCnt);
 
 	public:
@@ -95,6 +97,9 @@ namespace MyAlgebra
 			//if (rowPtr != nullptr && x < columnCount && y < rowCount)
 			return rowPtr[x][y];
 		}
+
+		int getRowCount() { return rowCount; }
+		int getColumnCount() { return columnCount; }
 
 		// =========================================================================
 		// return vector matrix from rows/columns
@@ -260,7 +265,26 @@ namespace MyAlgebra
 		return *this;
 	}
 
+	/*template <typename T>
+	CMatrix<T>& CMatrix<T>::multiplyMatrixOperation(const CMatrix<T>& other) {
 
+		//to do: add exceptions
+
+		CMatrix<T> retMatrix(this->rowCount, other.columnCount);
+
+		if (retMatrix.getRowCount() > 0 && retMatrix.getColumnCount() > 0) {
+			for (int i = 0, j, r, fieldSum; i < retMatrix.getRowCount; i++) {
+				for (j = 0; j < retMatrix.getColumnCount; j++) {
+					for (r = 0, fieldSum = 0; r < this->columnCount; r++) {
+						fieldSum += rowPtr[i][r] * other.rowPtr[r][j];
+					}
+					retMatrix[i][j] = fieldSum;
+				}
+			}
+		}
+		return std::move(retMatrix);
+	}*/
+	
 	template <typename T>
 	CMatrix<T>::CMatrix(T** newRowPtr, int rowCnt, int colCnt) {
 		//to do: add exceptions
@@ -441,6 +465,30 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
+	CMatrix<T> CMatrix<T>::operator*(const CMatrix& other) const {
+		//to do: add exceptions
+
+		CMatrix<T> retMatrix(this->rowCount, other.columnCount);
+
+		if (retMatrix.getRowCount() > 0 && retMatrix.getColumnCount() > 0) {
+			T fieldSum;
+			for (int i = 0, j, r; i < retMatrix.getRowCount(); i++) {
+				for (j = 0; j < retMatrix.getColumnCount(); j++) {
+					for (r = 0, fieldSum = 0; r < this->columnCount; r++) {
+						fieldSum += + rowPtr[i][r] * other.rowPtr[r][j];
+					}
+					retMatrix[i][j] = fieldSum;
+				}
+			}
+		}
+		return std::move(retMatrix);
+	}
+	template <typename T>
+	CMatrix<T> CMatrix<T>::multiply(const CMatrix& other) const {
+		return std::move(*this*other);
+	}
+
+	template <typename T>
 	CMatrix<T> CMatrix<T>::operator*(T multiplier) const {
 		return std::move(CMatrix(*this).multiplyConstantOperation(multiplier));
 	}
@@ -448,6 +496,8 @@ namespace MyAlgebra
 	CMatrix<T> CMatrix<T>::multiply(T multiplier) const {
 		return std::move(CMatrix(*this).multiplyConstantOperation(multiplier));
 	}
+
+
 
 	template <typename T>
 	void CMatrix<T>::display() const {
