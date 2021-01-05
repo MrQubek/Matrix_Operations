@@ -40,7 +40,12 @@ namespace MyAlgebra
 
 		CMatrix<T>& multiplyConstantOperation(T multiplier);
 
-		CMatrix<T> multiplyMatrixOperation(const CMatrix<T> & other);
+		CMatrix<T>& addMatrixOperation(const CMatrix<T> other);
+
+		CMatrix<T>& substractMatrixOperation(const CMatrix<T> other);
+
+		CMatrix<T>& unaryOperation();
+
 
 		CMatrix(T** newRowPtr, int rowCnt, int colCnt);
 
@@ -265,26 +270,38 @@ namespace MyAlgebra
 		return *this;
 	}
 
-	/*template <typename T>
-	CMatrix<T>& CMatrix<T>::multiplyMatrixOperation(const CMatrix<T>& other) {
-
+	template <typename T>
+	CMatrix<T>& CMatrix<T>::addMatrixOperation(const CMatrix<T> other) {
 		//to do: add exceptions
-
-		CMatrix<T> retMatrix(this->rowCount, other.columnCount);
-
-		if (retMatrix.getRowCount() > 0 && retMatrix.getColumnCount() > 0) {
-			for (int i = 0, j, r, fieldSum; i < retMatrix.getRowCount; i++) {
-				for (j = 0; j < retMatrix.getColumnCount; j++) {
-					for (r = 0, fieldSum = 0; r < this->columnCount; r++) {
-						fieldSum += rowPtr[i][r] * other.rowPtr[r][j];
-					}
-					retMatrix[i][j] = fieldSum;
-				}
+		for (int i = 0, j; i < rowCount; i++) {
+			for (j = 0; j < columnCount; j++) {
+				rowPtr[i][j] += other.rowPtr[i][j];
 			}
 		}
-		return std::move(retMatrix);
-	}*/
+		return *this;
+	}
+
+	template <typename T>
+	CMatrix<T>& CMatrix<T>::substractMatrixOperation(const CMatrix<T> other) {
+		//to do: add exceptions
+		for (int i = 0, j; i < rowCount; i++) {
+			for (j = 0; j < columnCount; j++) {
+				rowPtr[i][j] -= other.rowPtr[i][j];
+			}
+		}
+		return *this;
+	}
 	
+	template <typename T>
+	CMatrix<T>& CMatrix<T>::unaryOperation() {
+		for (int i = 0, j; i < rowCount;i++) {
+			for (j = 0; j < columnCount; j++) {
+				rowPtr[i][j] *= (-1);
+			}
+		}
+		return *this;
+	}
+
 	template <typename T>
 	CMatrix<T>::CMatrix(T** newRowPtr, int rowCnt, int colCnt) {
 		//to do: add exceptions
@@ -497,7 +514,34 @@ namespace MyAlgebra
 		return std::move(CMatrix(*this).multiplyConstantOperation(multiplier));
 	}
 
+	template <typename T>
+	CMatrix<T> CMatrix<T>::operator+(const CMatrix& other) const {
+		return std::move(CMatrix(*this).addMatrixOperation(other));
+	}
 
+	template <typename T>
+	CMatrix<T> CMatrix<T>::add(const CMatrix& other) const {
+		return std::move(CMatrix(*this).addMatrixOperation(other));
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::operator-(const CMatrix& other) const {
+		return std::move(CMatrix(*this).substractMatrixOperation(other));
+	}
+	template <typename T>
+	CMatrix<T> CMatrix<T>::substract(const CMatrix& other) const {
+		return std::move(CMatrix(*this).substractMatrixOperation(other));
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::operator-() const {
+		return std::move(CMatrix(*this).unaryOperation());
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::unary() const {
+		return std::move(CMatrix(*this).unaryOperation());
+	}
 
 	template <typename T>
 	void CMatrix<T>::display() const {

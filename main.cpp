@@ -73,9 +73,26 @@ int main() {
 	}
 	std::cout << TILDES << std::endl;
 	{
-
+		mat2->display();
+		mat3->display();
+		(*mat2 + (*mat3)).display();
+		(mat2->add(*mat3)).display();
+	}
+	std::cout << TILDES << std::endl;
+	{
+		mat2->display();
+		mat3->display();
+		(*mat2 - (*mat3)).display();
+		(mat2->substract(*mat3)).display();
 	}
 
+	std::cout << TILDES << std::endl;
+	{
+		mat2->display();
+		(-(*mat2)).display();
+		(mat2->unary()).display();
+
+	}
 
 	delete mat;
 	delete mat2;
