@@ -45,7 +45,7 @@ int main() {
 	std::cout << TILDES << std::endl;
 
 	mat3->toDiagonal(4.5).display();
-	(*mat3 = 2.5).display();
+	(*mat3 = 1.5).display();
 	std::cout << TILDES << std::endl;
 	{
 	MyAlgebra::CMatrix<float> kol = mat->getColumnVector(0);
@@ -68,7 +68,8 @@ int main() {
 	{
 		mat2->display();
 		mat3->display();
-		(*mat2 * (*mat3)).display();
+		MyAlgebra::CMatrix<float> matMultiply = (*mat2 * (*mat3));
+		matMultiply.display();
 		(mat2->multiply(*mat3)).display();
 	}
 	std::cout << TILDES << std::endl;
