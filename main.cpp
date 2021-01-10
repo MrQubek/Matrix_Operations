@@ -25,7 +25,7 @@ int main() {
 	mat2->display();
 	std::cout << std::endl;
 	mat3->display();
-
+	
 	std::cout << TILDES << std::endl;
 
 	*mat2 = std::move(*mat);
@@ -34,19 +34,22 @@ int main() {
 	std::cout << std::endl;
 	mat2->display();
 	mat3->display();
-
+	
 	std::cout << TILDES << std::endl;
-
+	
 	*mat3 = *mat2;
 	mat->display();
 	mat2->display();
 	mat3->display();
 
+	
 	std::cout << TILDES << std::endl;
 
 	mat3->toDiagonal(4.5).display();
 	(*mat3 = 1.5).display();
 	std::cout << TILDES << std::endl;
+
+	
 	{
 	MyAlgebra::CMatrix<float> kol = mat->getColumnVector(0);
 	kol.display();
@@ -58,12 +61,12 @@ int main() {
 	(mat->getColumnVector(0)).display(); //ask about it
 
 	}
-
+	
 	std::cout << TILDES << std::endl;
 	{
 		(*mat3 * 4.5).display();
 	}
-
+	
 	std::cout << TILDES << std::endl;
 	{
 		mat2->display();
@@ -72,6 +75,8 @@ int main() {
 		matMultiply.display();
 		(mat2->multiply(*mat3)).display();
 	}
+
+	
 	std::cout << TILDES << std::endl;
 	{
 		mat2->display();
@@ -79,6 +84,8 @@ int main() {
 		(*mat2 + (*mat3)).display();
 		(mat2->add(*mat3)).display();
 	}
+	
+	
 	std::cout << TILDES << std::endl;
 	{
 		mat2->display();
@@ -95,20 +102,44 @@ int main() {
 
 	}
 
+
 	std::cout << TILDES << std::endl;
+	delete mat;
 	{
-		*mat = MyAlgebra::CMatrix<float>(2, 3,true);
+		mat = new MyAlgebra::CMatrix<float>(2, 3,true);
+
 		mat->display();
 		(~(*mat)).display();
 		(mat->transponse()).display();
 	}
-
+	
 	delete mat;
 	delete mat2;
 	delete mat3;
 
-	_CrtDumpMemoryLeaks();
+	std::cout << TILDES << std::endl;
+	{
+		MyAlgebra::CMatrix<int> matrix = MyAlgebra::CMatrix<int>(2, 2,true);
+		matrix.display();
+		matrix.power(0).display();
+		matrix.power(1).display();
+		matrix.power(2).display();
+	}
 
+	std::cout << TILDES << std::endl;
+	{
+		MyAlgebra::CMatrix<int> matrix = MyAlgebra::CMatrix<int>(2, 2, true);
+		MyAlgebra::CMatrix<int> matrix2 = MyAlgebra::CMatrix<int>(2, 2, true);
+
+		matrix.display();
+		matrix2.display();
+
+		matrix.dotProduct(matrix2).display();
+	}
+
+
+	_CrtDumpMemoryLeaks();
+	
 
 	return 0;
 }

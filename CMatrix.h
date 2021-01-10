@@ -40,15 +40,20 @@ namespace MyAlgebra
 
 		CMatrix<T> multiplyConstantOperation(T multiplier)const;
 
-		CMatrix<T> multiplyMatrixOperation(const CMatrix<T> & other) const;
+		CMatrix<T> multiplyMatrixOperation(const CMatrix<T>& other) const;
 
-		CMatrix<T> addMatrixOperation(const CMatrix<T> & other)const;
+		CMatrix<T> addMatrixOperation(const CMatrix<T>& other)const;
 
-		CMatrix<T> substractMatrixOperation(const CMatrix<T> & other)const;
+		CMatrix<T> substractMatrixOperation(const CMatrix<T>& other)const;
 
 		CMatrix<T> unaryOperation()const;
 
 		CMatrix<T> transponseOperation() const;
+
+		CMatrix<T> powerOperation(int power) const;
+
+		CMatrix<T> dotProductOperation(const CMatrix<T>& other) const;
+
 
 		CMatrix(T** newRowPtr, int rowCnt, int colCnt);
 
@@ -60,7 +65,7 @@ namespace MyAlgebra
 		// =========================================================================
 
 		// create matrix with (possible) random values
-		CMatrix(int rowCnt, int colCnt, bool randInit = false);
+		CMatrix(int rowCnt, int colCnt, bool randInit);
 
 		// create square diagonal matrix
 		CMatrix(int rowCnt, T diagonal);
@@ -278,8 +283,8 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::multiplyMatrixOperation(const CMatrix<T> & other) const {
-		CMatrix<T> retMatrix(this->rowCount, other.columnCount);
+	CMatrix<T> CMatrix<T>::multiplyMatrixOperation(const CMatrix<T>& other) const {
+		CMatrix<T> retMatrix(this->rowCount, other.columnCount, false);
 
 		if (retMatrix.getRowCount() > 0 && retMatrix.getColumnCount() > 0) {
 			T fieldSum;
@@ -296,7 +301,7 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::addMatrixOperation(const CMatrix<T> & other) const {
+	CMatrix<T> CMatrix<T>::addMatrixOperation(const CMatrix<T>& other) const {
 		//to do: add exceptions
 		CMatrix<T> retMatrix(*this);
 
@@ -309,7 +314,7 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::substractMatrixOperation(const CMatrix<T> & other) const {
+	CMatrix<T> CMatrix<T>::substractMatrixOperation(const CMatrix<T>& other) const {
 		//to do: add exceptions
 		CMatrix<T> retMatrix(*this);
 
@@ -336,7 +341,7 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T> CMatrix<T>::transponseOperation() const {
-		CMatrix<T> retMatrix(this->columnCount, this->rowCount);
+		CMatrix<T> retMatrix(this->columnCount, this->rowCount, false);
 
 		if (retMatrix.getRowCount() > 0 && retMatrix.getColumnCount() > 0) {
 			for (int i = 0, j; i < rowCount; i++) {
@@ -348,6 +353,33 @@ namespace MyAlgebra
 		return std::move(retMatrix);
 	}
 
+	template <typename T>
+	CMatrix<T> CMatrix<T>::powerOperation(int power) const {
+		// to do: add exceptions
+		// if not square matrix -> throw exception
+
+		if (power < 0) {
+			return std::move(CMatrix<T>(nullptr, 0, 0));
+		}
+		else if (power == 0) {
+			return std::move(CMatrix<T>(rowCount, (T)1));
+		}
+		else {
+			CMatrix<T> retMatrix(*this);
+			if (retMatrix.getRowCount() > 0 && retMatrix.getColumnCount() > 0) {
+				for (int k = 1; k < power; k++) {
+					retMatrix = retMatrix * (*this);
+				}
+			}
+			return std::move(retMatrix);
+		}
+
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::dotProductOperation(const CMatrix<T>& other) const {
+		return std::move(this->transponse() * other);
+	}
 
 	template <typename T>
 	CMatrix<T>::CMatrix(T** newRowPtr, int rowCnt, int colCnt) {
@@ -367,7 +399,6 @@ namespace MyAlgebra
 			this->columnCount = colCnt;
 
 			if (randInit) {
-				srand((unsigned int)time(0));
 				populateMatrixWithRandomNumbers();
 			}
 		}
@@ -585,6 +616,20 @@ namespace MyAlgebra
 	template <typename T>
 	CMatrix<T> CMatrix<T>::transponse() const {
 		return std::move(this->transponseOperation());
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::operator^(int power) const {
+		return std::move(this->powerOperation());
+	}
+	template <typename T>
+	CMatrix<T> CMatrix<T>::power(int power) const {
+		return std::move(this->powerOperation(power));
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::dotProduct(const CMatrix& other) const {
+		return std::move(this->dotProductOperation(other));
 	}
 
 	template <typename T>
