@@ -137,6 +137,17 @@ int main() {
 		matrix.dotProduct(matrix2).display();
 	}
 
+	std::cout << TILDES << std::endl;
+	{
+		MyAlgebra::CMatrix<float> matrix = MyAlgebra::CMatrix<float>(2, 2, true);
+		MyAlgebra::CMatrix<float> matrix2 = MyAlgebra::CMatrix<float>(2, 2, true);
+		MyAlgebra::CMatrix<float> matrix3 = MyAlgebra::CMatrix<float>(3, 2, true);
+
+		std::cout << (0.0f < 10e-6f) << std::endl;
+		std::cout << (matrix == matrix) << std::endl;
+	}
+
+
 
 	_CrtDumpMemoryLeaks();
 	

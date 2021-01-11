@@ -42,3 +42,52 @@ void MyAlgebra::CMatrix<double>::populateMatrixWithRandomNumbers() {
 		}
 	}
 }
+
+template <>
+bool MyAlgebra::CMatrix<int>::comparisionOperation(const  MyAlgebra::CMatrix<int>& other) const {
+	
+	if (this->rowCount != other.rowCount && this->columnCount != other.columnCount) {
+		return false;
+	}
+	
+	for (int i = 0, j = 0; i < this->rowCount; i++) {
+		for (j = 0; j < this->columnCount; j++) {
+			if (rowPtr[i][j] != other.rowPtr[i][j])
+				return false;
+		}
+	}
+	return true;
+}
+
+template <>
+bool MyAlgebra::CMatrix<float>::comparisionOperation(const  MyAlgebra::CMatrix<float>& other) const {
+
+	if (this->rowCount != other.rowCount && this->columnCount != other.columnCount) {
+		return false;
+	}
+
+	for (int i = 0, j = 0; i < this->rowCount; i++) {
+		for (j = 0; j < this->columnCount; j++) {
+			if (abs(this->rowPtr[i][j] - other.rowPtr[i][j]) > ALG_PRECISION){
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+template <>
+bool MyAlgebra::CMatrix<double>::comparisionOperation(const  MyAlgebra::CMatrix<double>& other) const {
+
+	if (this->rowCount != other.rowCount && this->columnCount != other.columnCount) {
+		return false;
+	}
+
+	for (int i = 0, j = 0; i < this->rowCount; i++) {
+		for (j = 0; j < this->columnCount; j++) {
+			if (abs(rowPtr[i][j] - other.rowPtr[i][j]) > ALG_PRECISION)
+				return false;
+		}
+	}
+	return true;
+}

@@ -54,6 +54,7 @@ namespace MyAlgebra
 
 		CMatrix<T> dotProductOperation(const CMatrix<T>& other) const;
 
+		bool comparisionOperation(const CMatrix<T>& other) const;
 
 		CMatrix(T** newRowPtr, int rowCnt, int colCnt);
 
@@ -177,6 +178,9 @@ namespace MyAlgebra
 
 	//template <typename T>
 	//CMatrix<T> operator*(T multiplier, const CMatrix<T>& rhs);
+
+	template <typename T>
+	const float MyAlgebra::CMatrix<T>::ALG_PRECISION = 1e-6f;
 
 	// =========================================================================
 	// methods declarations
@@ -630,6 +634,16 @@ namespace MyAlgebra
 	template <typename T>
 	CMatrix<T> CMatrix<T>::dotProduct(const CMatrix& other) const {
 		return std::move(this->dotProductOperation(other));
+	}
+
+	template <typename T>
+	bool CMatrix<T>::operator==(const CMatrix& rhs) const {
+		return comparisionOperation(rhs);
+	}
+
+	template <typename T>
+	bool CMatrix<T>::compareTo(const CMatrix& rhs) const {
+		return comparisionOperation(rhs);
 	}
 
 	template <typename T>
