@@ -148,6 +148,21 @@ int main() {
 	}
 
 
+	std::cout << TILDES << std::endl;
+	{
+		MyAlgebra::CMatrix<float> matrix = MyAlgebra::CMatrix<float>(2, 2, false);
+
+		matrix.readMatrixFromFile("floatMatrix.txt");
+		matrix.display();
+	}
+
+	std::cout << TILDES << std::endl;
+	{
+		MyAlgebra::CMatrix<int> matrix = MyAlgebra::CMatrix<int>(2, 2, false);
+
+		matrix.readMatrixFromFile("intMatrix.txt");
+		matrix.display();
+	}
 
 	_CrtDumpMemoryLeaks();
 	

@@ -14,7 +14,7 @@ void MyAlgebra::CMatrix<int>::populateMatrixWithRandomNumbers() {
 		}
 	}
 }
-
+ 
 template <>
 void MyAlgebra::CMatrix<float>::populateMatrixWithRandomNumbers() {
 	static int seed = clock() * time(NULL);

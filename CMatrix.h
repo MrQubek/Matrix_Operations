@@ -6,6 +6,8 @@
 #include<time.h>
 #include <random>
 #include <iostream>
+#include <fstream>
+#include <sstream> 
 
 #include "const.h"
 
@@ -134,13 +136,11 @@ namespace MyAlgebra
 		CMatrix operator*(T multiplier) const;
 		CMatrix multiply(T multiplier) const;
 
-
 		CMatrix operator+(const CMatrix& other) const;
 		CMatrix add(const CMatrix& other) const;
 
 		CMatrix operator-(const CMatrix& other) const;
 		CMatrix substract(const CMatrix& other) const;
-
 
 		// change sign of all elements of matrix
 		CMatrix operator-() const;
@@ -645,6 +645,99 @@ namespace MyAlgebra
 	bool CMatrix<T>::compareTo(const CMatrix& rhs) const {
 		return comparisionOperation(rhs);
 	}
+
+	template <typename T>
+	bool CMatrix<T>::readMatrixFromFile(std::string fileName) {
+
+		if (rowPtr != nullptr) {
+			deallocateMemory();
+			rowCount = 0;
+			columnCount = 0;
+		}
+
+		std::ifstream fileHandler;
+		bool isOk = true;
+		fileHandler.open(fileName);
+		if (fileHandler.is_open()) {
+
+			int fileRowCount = 0, fileColumnCount = 0;
+
+			std::string bufer = "";
+			std::stringstream stream;
+			T val = 0;
+
+			if (std::getline(fileHandler, bufer)) {
+				fileRowCount++;
+				stream << bufer;
+				bufer = "";
+				//find column count
+				stream >> bufer;
+				while (!stream.eof()) {
+					fileColumnCount++;
+					bufer = "";
+					stream >> bufer;
+				}
+				//find row count
+				while (std::getline(fileHandler, bufer)) {
+					fileRowCount++;
+				}
+				// if dimensions are correct, allocate memory
+				if (fileColumnCount > 0 && fileRowCount > 0) {
+					if (allocateMemory(fileRowCount, fileColumnCount)) {
+						rowCount = fileRowCount;
+						columnCount = fileColumnCount;
+
+						fileHandler.clear();
+						fileHandler.seekg(0);
+						stream = std::stringstream();
+						//load values from file into matrix
+
+						for (int i = 0, j; i < rowCount; i++) {
+							if (std::getline(fileHandler, bufer)) {
+								stream << bufer;
+								bufer = "";
+								for (j = 0; j < columnCount; j++) {
+									stream >> bufer;
+									if (std::stringstream(bufer) >> val) {
+										rowPtr[i][j] = val;
+									}
+									else {
+										//exit loops
+										i = rowCount;
+										isOk = false;
+										break;
+										// to do
+									}
+									bufer = "";
+								}
+								stream = std::stringstream();
+							}
+							else {
+								//exit loops
+								i = rowCount;
+								isOk = false;
+								// to do
+							}
+						}
+
+
+
+					}
+				}
+			}
+			fileHandler.close();
+		}
+
+		if (isOk) {
+			return true;
+		}
+		rowPtr = nullptr;
+		rowCount = 0;
+		columnCount = 0;
+		return false;
+
+	}
+
 
 	template <typename T>
 	void CMatrix<T>::display() const {
