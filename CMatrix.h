@@ -25,7 +25,7 @@ namespace MyAlgebra
 
 		// return:	true if memory allocation for matrix successful
 		//			false otherwise
-		// warning: possible memory leaks if memory was already allocated
+		// warning: method do not check if memory is already allocated
 		bool allocateMemory(int rowCnt, int colCnt);
 
 		void deallocateMemory();
@@ -64,7 +64,7 @@ namespace MyAlgebra
 		static const float ALG_PRECISION;
 
 		// =========================================================================
-		// Constructors:
+		// constructors:
 		// =========================================================================
 
 		// create matrix with (possible) random values
@@ -84,7 +84,7 @@ namespace MyAlgebra
 		}
 
 		// =========================================================================
-		// Assign operators:
+		// assign operators:
 		// =========================================================================
 
 		const CMatrix& operator=(const CMatrix& other);
@@ -110,7 +110,7 @@ namespace MyAlgebra
 		}
 
 		T get(int x, int y) {
-			//if (rowPtr != nullptr && x < columnCount && y < rowCount)
+			//to do
 			return rowPtr[x][y];
 		}
 
@@ -129,43 +129,43 @@ namespace MyAlgebra
 		// algebraic operations
 		// =========================================================================
 
-		CMatrix operator*(const CMatrix& other) const;
-		CMatrix multiply(const CMatrix& other) const;
+		CMatrix operator*(const CMatrix& other) const { return std::move(this->multiplyMatrixOperation(other)); }
+		CMatrix multiply(const CMatrix& other) const { return std::move(this->multiplyMatrixOperation(other)); }
 
 		// multiply matrix by constant
-		CMatrix operator*(T multiplier) const;
-		CMatrix multiply(T multiplier) const;
+		CMatrix operator*(T multiplier) const { return std::move(this->multiplyConstantOperation(multiplier)); }
+		CMatrix multiply(T multiplier) const { return std::move(this->multiplyConstantOperation(multiplier)); }
 
-		CMatrix operator+(const CMatrix& other) const;
-		CMatrix add(const CMatrix& other) const;
+		CMatrix operator+(const CMatrix& other) const { return std::move(this->addMatrixOperation(other)); }
+		CMatrix add(const CMatrix& other) const { return std::move(this->addMatrixOperation(other)); }
 
-		CMatrix operator-(const CMatrix& other) const;
-		CMatrix substract(const CMatrix& other) const;
+		CMatrix operator-(const CMatrix& other) const { return std::move(this->substractMatrixOperation(other)); }
+		CMatrix substract(const CMatrix& other) const { return std::move(this->substractMatrixOperation(other)); }
 
 		// change sign of all elements of matrix
-		CMatrix operator-() const;
-		CMatrix unary() const;
+		CMatrix operator-() const { return std::move(this->unaryOperation()); }
+		CMatrix unary() const { return std::move(this->unaryOperation()); }
 
 		// transponse matrix
-		CMatrix operator~() const;
-		CMatrix transponse() const;
+		CMatrix operator~() const { return std::move(this->transponseOperation()); }
+		CMatrix transponse() const { return std::move(this->transponseOperation()); }
 
 		// accept only power >= 0:
 		//    power = 0  - return unity matrix
 		//    power = 1  - return copy of matrix
 		//    power > 1  - return power of matrix
-		CMatrix operator^(int power) const;
-		CMatrix power(int power) const;
+		CMatrix operator^(int power) const { return std::move(this->powerOperation(power)); }
+		CMatrix power(int power) const { return std::move(this->powerOperation(power)); }
 
 		// dot product (iloczyn skalarny) A^T*B
-		CMatrix dotProduct(const CMatrix& other) const;
+		CMatrix dotProduct(const CMatrix& other) const { return std::move(this->dotProductOperation(other)); }
 
 		// compare matrix with accuracy to ALG_PRECISION
-		bool operator==(const CMatrix& rhs) const;
-		bool compareTo(const CMatrix& rhs) const;
+		bool operator==(const CMatrix& rhs) const { return comparisionOperation(rhs); }
+		bool compareTo(const CMatrix& rhs) const { return comparisionOperation(rhs); }
 
 		// =========================================================================
-		// algebraic operations
+		// I/O operations
 		// =========================================================================
 
 		bool readMatrixFromFile(std::string fileName);
@@ -173,11 +173,10 @@ namespace MyAlgebra
 		// only for tests - display matrix by rows on stdout
 		void display() const;
 
-		// friend CMtx operator*( T multiplier, const CMtx &rhs );
+		friend CMatrix operator*(T multiplier, const CMatrix& rhs) {
+			return std::move(rhs.multiplyConstantOperation(multiplier));
+		}
 	};
-
-	//template <typename T>
-	//CMatrix<T> operator*(T multiplier, const CMatrix<T>& rhs);
 
 	template <typename T>
 	const float MyAlgebra::CMatrix<T>::ALG_PRECISION = 1e-6f;
@@ -219,6 +218,9 @@ namespace MyAlgebra
 			delete[] rowPtr[i];
 		}
 		delete[] rowPtr;
+		rowPtr = nullptr;
+		rowCount = 0;
+		columnCount = 0;
 	}
 
 	template <typename T>
@@ -564,95 +566,10 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::operator*(const CMatrix& other) const {
-		//to do: add exceptions
-
-		return std::move(this->multiplyMatrixOperation(other));
-	}
-	template <typename T>
-	CMatrix<T> CMatrix<T>::multiply(const CMatrix& other) const {
-		return std::move(this->multiplyMatrixOperation(other));
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::operator*(T multiplier) const {
-		return std::move(this->multiplyConstantOperation(multiplier));
-	}
-	template <typename T>
-	CMatrix<T> CMatrix<T>::multiply(T multiplier) const {
-		return std::move(this->multiplyConstantOperation(multiplier));
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::operator+(const CMatrix& other) const {
-		return std::move(this->addMatrixOperation(other));
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::add(const CMatrix& other) const {
-		return std::move(this->addMatrixOperation(other));
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::operator-(const CMatrix& other) const {
-		return std::move(this->substractMatrixOperation(other));
-	}
-	template <typename T>
-	CMatrix<T> CMatrix<T>::substract(const CMatrix& other) const {
-		return std::move(this->substractMatrixOperation(other));
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::operator-() const {
-		return std::move(this->unaryOperation());
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::unary() const {
-		return std::move(this->unaryOperation());
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::operator~() const {
-		return std::move(this->transponseOperation());
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::transponse() const {
-		return std::move(this->transponseOperation());
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::operator^(int power) const {
-		return std::move(this->powerOperation());
-	}
-	template <typename T>
-	CMatrix<T> CMatrix<T>::power(int power) const {
-		return std::move(this->powerOperation(power));
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::dotProduct(const CMatrix& other) const {
-		return std::move(this->dotProductOperation(other));
-	}
-
-	template <typename T>
-	bool CMatrix<T>::operator==(const CMatrix& rhs) const {
-		return comparisionOperation(rhs);
-	}
-
-	template <typename T>
-	bool CMatrix<T>::compareTo(const CMatrix& rhs) const {
-		return comparisionOperation(rhs);
-	}
-
-	template <typename T>
 	bool CMatrix<T>::readMatrixFromFile(std::string fileName) {
 
 		if (rowPtr != nullptr) {
 			deallocateMemory();
-			rowCount = 0;
-			columnCount = 0;
 		}
 
 		std::ifstream fileHandler;

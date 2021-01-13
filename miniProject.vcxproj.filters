@@ -21,6 +21,9 @@
     <ClInclude Include="const.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
+    <ClInclude Include="MatrixException.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CMatrix.cpp">
@@ -28,6 +31,9 @@
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="simpleTests.h">
+      <Filter>Pliki nagłówkowe</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
