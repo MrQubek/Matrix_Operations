@@ -1,11 +1,9 @@
-
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
+#pragma once
 
 #include <stdlib.h>
 #include "CMatrix.h"
 
-void simpleTests() {
+inline void simpleTests() {
 
 	//MyAlgebra::CMatrix<int> * mat = new MyAlgebra::CMatrix<int>(2,2,true);
 	MyAlgebra::CMatrix<float>* mat = new MyAlgebra::CMatrix<float>(2, (float)5.0);
@@ -163,7 +161,5 @@ void simpleTests() {
 		matrix.readMatrixFromFile("intMatrix.txt");
 		matrix.display();
 	}
-
-	_CrtDumpMemoryLeaks();
 
 }

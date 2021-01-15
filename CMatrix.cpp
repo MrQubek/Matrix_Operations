@@ -46,7 +46,7 @@ void MyAlgebra::CMatrix<double>::populateMatrixWithRandomNumbers() {
 template <>
 bool MyAlgebra::CMatrix<int>::comparisionOperation(const  MyAlgebra::CMatrix<int>& other) const {
 	
-	if (this->rowCount != other.rowCount && this->columnCount != other.columnCount) {
+	if (!equalDimensions(other)) {
 		return false;
 	}
 	
@@ -62,7 +62,7 @@ bool MyAlgebra::CMatrix<int>::comparisionOperation(const  MyAlgebra::CMatrix<int
 template <>
 bool MyAlgebra::CMatrix<float>::comparisionOperation(const  MyAlgebra::CMatrix<float>& other) const {
 
-	if (this->rowCount != other.rowCount && this->columnCount != other.columnCount) {
+	if (!equalDimensions(other)) {
 		return false;
 	}
 
@@ -79,7 +79,7 @@ bool MyAlgebra::CMatrix<float>::comparisionOperation(const  MyAlgebra::CMatrix<f
 template <>
 bool MyAlgebra::CMatrix<double>::comparisionOperation(const  MyAlgebra::CMatrix<double>& other) const {
 
-	if (this->rowCount != other.rowCount && this->columnCount != other.columnCount) {
+	if (!equalDimensions(other)) {
 		return false;
 	}
 

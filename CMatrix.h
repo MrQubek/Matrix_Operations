@@ -10,7 +10,7 @@
 #include <sstream> 
 
 #include "const.h"
-
+#include "MatrixException.h"
 
 namespace MyAlgebra
 {
@@ -114,8 +114,20 @@ namespace MyAlgebra
 			return rowPtr[x][y];
 		}
 
-		int getRowCount() { return rowCount; }
-		int getColumnCount() { return columnCount; }
+		int getRowCount() const { return rowCount; }
+		int getColumnCount() const { return columnCount; }
+
+		std::pair<int, int> getDims() const { return std::pair<int, int>(rowCount, columnCount); }
+
+		bool isInitialized() const { return !(rowPtr == nullptr && rowCount <= 0 && columnCount <= 0); }
+
+		bool isInitialized(const CMatrix& other) const { return !(other.rowPtr == nullptr && other.rowCount <= 0 && other.columnCount <= 0); }
+
+		bool equalDimensions() const { return rowCount == columnCount; }
+
+		bool equalDimensions(const CMatrix& other) const { return rowCount == other.rowCount && columnCount == other.columnCount; }
+
+		bool canMultiply(const CMatrix& other) const { return columnCount == other.rowCount; }
 
 		// =========================================================================
 		// return vector matrix from rows/columns
@@ -187,8 +199,7 @@ namespace MyAlgebra
 
 	template <typename T>
 	bool CMatrix<T>::allocateMemory(int rowCnt, int colCnt) {
-		//to do: add exceprions
-		if (rowCnt < 0 || colCnt < 0) {
+		if (rowCnt <= 0 || colCnt <= 0) {
 			rowPtr = nullptr;
 			return false;
 		}
@@ -205,10 +216,14 @@ namespace MyAlgebra
 					}
 					delete[] rowPtr;
 					rowPtr = nullptr;
+					this->rowCount = 0;
+					this->columnCount = 0;
 					return false;
 				}
 			}
 		}
+		this->rowCount = rowCnt;
+		this->columnCount = colCnt;
 		return true;
 	}
 
@@ -235,15 +250,7 @@ namespace MyAlgebra
 	template <typename T>
 	void CMatrix<T>::copyOperation(const CMatrix& other) {
 		if (allocateMemory(other.rowCount, other.columnCount)) {
-			this->rowCount = other.rowCount;
-			this->columnCount = other.columnCount;
-
 			copyMatrixValues(other);
-
-		}
-		else {
-			this->rowCount = 0;
-			this->columnCount = 0;
 		}
 	}
 
@@ -263,6 +270,13 @@ namespace MyAlgebra
 	template <typename T>
 	void CMatrix<T>::diagonalOperation(T diagonal) {
 
+		if (!isInitialized()) {
+			throw MatrixNotInitialized(OP_DIAGONAL);
+		}
+		if (!(rowCount == columnCount)) {
+			throw NotSquareMatrix(OP_DIAGONAL, getDims());
+		}
+
 		for (int i = 0, j = 0; i < rowCount; i++) {
 			for (j = 0; j < columnCount; j++) {
 				if (i == j) {
@@ -280,6 +294,10 @@ namespace MyAlgebra
 
 		CMatrix<T> retMatrix(*this);
 
+		if (!isInitialized(retMatrix)) {
+			throw MatrixNotInitialized(OP_MULTIPLY_CONST);
+		}
+
 		for (int i = 0, j; i < rowCount; i++) {
 			for (j = 0; j < columnCount; j++) {
 				retMatrix.rowPtr[i][j] *= multiplier;
@@ -290,26 +308,42 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T> CMatrix<T>::multiplyMatrixOperation(const CMatrix<T>& other) const {
+
+		if (!canMultiply(other)) {
+			throw DimensionMismatchException(OP_MULTIPLY_MATRIX, getDims(), other.getDims());
+		}
+
 		CMatrix<T> retMatrix(this->rowCount, other.columnCount, false);
 
-		if (retMatrix.getRowCount() > 0 && retMatrix.getColumnCount() > 0) {
-			T fieldSum;
-			for (int i = 0, j, r; i < retMatrix.getRowCount(); i++) {
-				for (j = 0; j < retMatrix.getColumnCount(); j++) {
-					for (r = 0, fieldSum = 0; r < this->columnCount; r++) {
-						fieldSum += +rowPtr[i][r] * other.rowPtr[r][j];
-					}
-					retMatrix[i][j] = fieldSum;
+		if (!retMatrix.isInitialized()) {
+			throw MatrixNotInitialized(OP_MULTIPLY_MATRIX);
+		}
+
+		T fieldSum;
+		for (int i = 0, j, r; i < retMatrix.getRowCount(); i++) {
+			for (j = 0; j < retMatrix.getColumnCount(); j++) {
+				for (r = 0, fieldSum = 0; r < this->columnCount; r++) {
+					fieldSum += +rowPtr[i][r] * other.rowPtr[r][j];
 				}
+				retMatrix[i][j] = fieldSum;
 			}
 		}
+
 		return std::move(retMatrix);
 	}
 
 	template <typename T>
 	CMatrix<T> CMatrix<T>::addMatrixOperation(const CMatrix<T>& other) const {
-		//to do: add exceptions
+
+		if (!equalDimensions(other)) {
+			throw DimensionMismatchException(OP_ADD, getDims(), other.getDims());
+		}
+
 		CMatrix<T> retMatrix(*this);
+
+		if (!isInitialized(retMatrix)) {
+			throw MatrixNotInitialized(OP_ADD);
+		}
 
 		for (int i = 0, j; i < rowCount; i++) {
 			for (j = 0; j < columnCount; j++) {
@@ -321,8 +355,16 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T> CMatrix<T>::substractMatrixOperation(const CMatrix<T>& other) const {
-		//to do: add exceptions
+
+		if (!equalDimensions(other)) {
+			throw DimensionMismatchException(OP_SUBSTRACT, getDims(), other.getDims());
+		}
+
 		CMatrix<T> retMatrix(*this);
+
+		if (!isInitialized(retMatrix)) {
+			throw MatrixNotInitialized(OP_SUBSTRACT);
+		}
 
 		for (int i = 0, j; i < rowCount; i++) {
 			for (j = 0; j < columnCount; j++) {
@@ -337,6 +379,10 @@ namespace MyAlgebra
 
 		CMatrix<T> retMatrix(*this);
 
+		if (!isInitialized(retMatrix)) {
+			throw MatrixNotInitialized(OP_UNARY);
+		}
+
 		for (int i = 0, j; i < rowCount; i++) {
 			for (j = 0; j < columnCount; j++) {
 				retMatrix.rowPtr[i][j] *= (-1);
@@ -349,34 +395,44 @@ namespace MyAlgebra
 	CMatrix<T> CMatrix<T>::transponseOperation() const {
 		CMatrix<T> retMatrix(this->columnCount, this->rowCount, false);
 
-		if (retMatrix.getRowCount() > 0 && retMatrix.getColumnCount() > 0) {
-			for (int i = 0, j; i < rowCount; i++) {
-				for (j = 0; j < columnCount; j++) {
-					retMatrix[j][i] = this->rowPtr[i][j];
-				}
+		if (!isInitialized(retMatrix)) {
+			throw MatrixNotInitialized(OP_TRANSPONSE);
+		}
+
+		for (int i = 0, j; i < rowCount; i++) {
+			for (j = 0; j < columnCount; j++) {
+				retMatrix[j][i] = this->rowPtr[i][j];
 			}
 		}
+
 		return std::move(retMatrix);
 	}
 
 	template <typename T>
 	CMatrix<T> CMatrix<T>::powerOperation(int power) const {
-		// to do: add exceptions
-		// if not square matrix -> throw exception
 
 		if (power < 0) {
-			return std::move(CMatrix<T>(nullptr, 0, 0));
+			throw WrongArgument(OP_POWER, power);
 		}
-		else if (power == 0) {
+
+		if (!equalDimensions()) {
+			throw NotSquareMatrix(OP_POWER, getDims());
+		}
+
+		if (power == 0) {
 			return std::move(CMatrix<T>(rowCount, (T)1));
 		}
 		else {
 			CMatrix<T> retMatrix(*this);
-			if (retMatrix.getRowCount() > 0 && retMatrix.getColumnCount() > 0) {
-				for (int k = 1; k < power; k++) {
-					retMatrix = retMatrix * (*this);
-				}
+
+			if (!isInitialized(retMatrix)) {
+				throw MatrixNotInitialized(OP_POWER);
 			}
+
+			for (int k = 1; k < power; k++) {
+				retMatrix = retMatrix * (*this);
+			}
+
 			return std::move(retMatrix);
 		}
 
@@ -384,13 +440,16 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T> CMatrix<T>::dotProductOperation(const CMatrix<T>& other) const {
+
+		if (!(this->rowCount == other.rowCount)) {
+			throw DimensionMismatchException(OP_DOT_PRODUCT, getDims(), other.getDims());
+		}
+
 		return std::move(this->transponse() * other);
 	}
 
 	template <typename T>
 	CMatrix<T>::CMatrix(T** newRowPtr, int rowCnt, int colCnt) {
-		//to do: add exceptions
-
 		rowPtr = newRowPtr;
 		rowCount = rowCnt;
 		columnCount = colCnt;
@@ -398,30 +457,16 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T>::CMatrix(int rowCnt, int colCnt, bool randInit) {
-		//to do: add exceptions
-
 		if (allocateMemory(rowCnt, colCnt)) {
-			this->rowCount = rowCnt;
-			this->columnCount = colCnt;
-
 			if (randInit) {
 				populateMatrixWithRandomNumbers();
 			}
-		}
-		else {
-			this->rowCount = 0;
-			this->columnCount = 0;
 		}
 	}
 
 	template <typename T>
 	CMatrix<T>::CMatrix(int rowCnt, T diagonal) {
-		//to do: add exceptions
-
 		if (allocateMemory(rowCnt, rowCnt)) {
-			this->rowCount = rowCnt;
-			this->columnCount = rowCnt;
-
 			for (int i = 0, j = 0; i < rowCnt; i++) {
 				for (j = 0; j < rowCnt; j++) {
 					if (i == j) {
@@ -433,10 +478,6 @@ namespace MyAlgebra
 				}
 
 			}
-		}
-		else {
-			this->rowCount = 0;
-			this->columnCount = 0;
 		}
 	}
 
@@ -479,7 +520,6 @@ namespace MyAlgebra
 
 	template <typename T>
 	const CMatrix<T>& CMatrix<T>::operator=(CMatrix<T>&& other) noexcept {
-
 		if (this != &other) {
 			if (this->rowPtr != nullptr) {
 				deallocateMemory();
@@ -514,7 +554,13 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T> CMatrix<T>::getRowVector(int rowIndex) {
-		//to do: add exceptions
+		if (!isInitialized()) {
+			return CMatrix(nullptr, 0, 0);
+		}
+
+		if (rowIndex<0 || rowIndex>=rowCount) {
+			throw WrongArgument(OP_GET_ROW, rowIndex);
+		}
 
 		T** newRowPtr = new(std::nothrow) T * [1];
 		if (newRowPtr != nullptr) {
@@ -531,12 +577,17 @@ namespace MyAlgebra
 				delete[] newRowPtr;
 			}
 		}
-		return std::move(CMatrix(nullptr, 0, 0));
+		return CMatrix(nullptr, 0, 0);
 	}
 
 	template <typename T>
 	CMatrix<T> CMatrix<T>::getColumnVector(int columnIndex) {
-		//to do: add exceptions
+		if (!isInitialized()) {
+			return CMatrix(nullptr, 0, 0);
+		}
+		if (columnIndex < 0 || columnIndex >= rowCount) {
+			throw WrongArgument(OP_GET_COLUMN, columnIndex);
+		}
 
 		T** newColumnPtr = new(std::nothrow) T * [rowCount];
 		if (newColumnPtr != nullptr) {
@@ -549,7 +600,7 @@ namespace MyAlgebra
 						delete[] newColumnPtr[i];
 					}
 					delete[] newColumnPtr;
-					return std::move(CMatrix(nullptr, 0, 0));
+					return CMatrix(nullptr, 0, 0);
 				}
 			}
 
@@ -561,7 +612,7 @@ namespace MyAlgebra
 			return std::move(retMatrix);
 		}
 		else {
-			return std::move(CMatrix(nullptr, 0, 0));
+			return CMatrix(nullptr, 0, 0);
 		}
 	}
 
@@ -601,8 +652,6 @@ namespace MyAlgebra
 				// if dimensions are correct, allocate memory
 				if (fileColumnCount > 0 && fileRowCount > 0) {
 					if (allocateMemory(fileRowCount, fileColumnCount)) {
-						rowCount = fileRowCount;
-						columnCount = fileColumnCount;
 
 						fileHandler.clear();
 						fileHandler.seekg(0);

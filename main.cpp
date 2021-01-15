@@ -1,5 +1,8 @@
 ﻿
-//#include "simpleTests.h"
+#include "simpleTests.h"
+
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
 
 #include <iostream>
 
@@ -49,7 +52,7 @@ double test()
 {
 	// Przykładowe testowe obliczenie macierzowe. Podobne obliczenia będą 
 	// używane do oceny efektywności implementacji w konkursie.
-	const int SIZE = 1000;
+	const int SIZE = 2;
 	const int ITER_CNT = 10;
 
 	T A(SIZE, SIZE, true);
@@ -74,13 +77,18 @@ double test()
 
 int main(int argc, char* argv[])
 {
+	if(false){
 	double t_prog = test<MyAlgebra::CMatrix<float>>();
 	double t_ref = test<RefAlgebra::CMtx>();
 
 	printf("Czas wykonania referencyjny: %7.2lfs\n", t_ref);
 	printf("Czas wykonania testowany:    %7.2lfs\n", t_prog);
 	printf("Wspolczynnik przyspieszenia Q: %5.2lf", t_ref / t_prog);
-	
+	}
+	else {
+		simpleTests();
+	}
+	_CrtDumpMemoryLeaks();
 
 	return 0;
 }
