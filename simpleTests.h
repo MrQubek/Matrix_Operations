@@ -49,14 +49,10 @@ inline void simpleTests() {
 
 
 	{
-		MyAlgebra::CMatrix<float> kol = mat->getColumnVector(0);
-		kol.display();
-		MyAlgebra::CMatrix<float> row = mat->getRowVector(1);
-		row.display();
-
-		MyAlgebra::CMatrix<float>(3, 3, true).display();
-
-		(mat->getColumnVector(0)).display(); //ask about it
+		MyAlgebra::CMatrix<int> kol(2, 2, true);
+		kol.getColumnVector(0).display();
+		MyAlgebra::CMatrix<int> row(2, 2, true);
+		row.getRowVector(1).display();
 
 	}
 
@@ -99,7 +95,6 @@ inline void simpleTests() {
 		(mat2->unary()).display();
 
 	}
-
 
 	std::cout << TILDES << std::endl;
 	delete mat;
@@ -145,12 +140,12 @@ inline void simpleTests() {
 		std::cout << (matrix == matrix) << std::endl;
 	}
 
-
+	
 	std::cout << TILDES << std::endl;
 	{
 		MyAlgebra::CMatrix<float> matrix = MyAlgebra::CMatrix<float>(2, 2, false);
 
-		matrix.readMatrixFromFile("floatMatrix.txt");
+		if(matrix.readMatrixFromFile("floatMatrix.txt"))
 		matrix.display();
 	}
 
@@ -158,8 +153,16 @@ inline void simpleTests() {
 	{
 		MyAlgebra::CMatrix<int> matrix = MyAlgebra::CMatrix<int>(2, 2, false);
 
-		matrix.readMatrixFromFile("intMatrix.txt");
-		matrix.display();
+		if (matrix.readMatrixFromFile("intMatrix.txt"))
+			matrix.display();
+	}
+	
+	std::cout << TILDES << std::endl;
+	{
+		MyAlgebra::CMatrix<int> matrix = MyAlgebra::CMatrix<int>(2, 2, false);
+
+		if (matrix.readMatrixFromFile("badIntMatrix_1.txt"))
+			matrix.display();
 	}
 
 }

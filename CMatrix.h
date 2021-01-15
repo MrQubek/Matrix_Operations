@@ -11,6 +11,7 @@
 
 #include "const.h"
 #include "MatrixException.h"
+#include "FileError.h"
 
 namespace MyAlgebra
 {
@@ -79,9 +80,7 @@ namespace MyAlgebra
 
 		~CMatrix();
 
-		CMatrix createMatrix(int rowCnt, int colCnt, bool randInit = false) {
-			return std::move(CMatrix(rowCnt, colCnt, randInit));
-		}
+		inline CMatrix createMatrix(int rowCnt, int colCnt, bool randInit = false) { return std::move(CMatrix(rowCnt, colCnt, randInit)); }
 
 		// =========================================================================
 		// assign operators:
@@ -102,32 +101,27 @@ namespace MyAlgebra
 		// indexing matrix
 		// =========================================================================
 
-		T* operator[](int row_ind) { return rowPtr[row_ind]; }
-		T* getRow(int row_ind) { return rowPtr[row_ind]; }
+		inline T* operator[](int row_ind) { return rowPtr[row_ind]; }
+		inline T* getRow(int row_ind) { return rowPtr[row_ind]; }
 
-		void set(int x, int y, T newVal) {
-			if (rowPtr != nullptr)rowPtr[x][y] = newVal;
-		}
+		void set(int rowIndex, int columnIndex, T newVal);
 
-		T get(int x, int y) {
-			//to do
-			return rowPtr[x][y];
-		}
+		T get(int rowIndex, int columnIndex);
 
-		int getRowCount() const { return rowCount; }
-		int getColumnCount() const { return columnCount; }
+		inline int getRowCount() const { return rowCount; }
+		inline int getColumnCount() const { return columnCount; }
 
-		std::pair<int, int> getDims() const { return std::pair<int, int>(rowCount, columnCount); }
+		inline std::pair<int, int> getDims() const { return std::pair<int, int>(rowCount, columnCount); }
 
-		bool isInitialized() const { return !(rowPtr == nullptr && rowCount <= 0 && columnCount <= 0); }
+		inline bool isInitialized() const { return !(rowPtr == nullptr && rowCount <= 0 && columnCount <= 0); }
 
-		bool isInitialized(const CMatrix& other) const { return !(other.rowPtr == nullptr && other.rowCount <= 0 && other.columnCount <= 0); }
+		inline bool isInitialized(const CMatrix& other) const { return !(other.rowPtr == nullptr && other.rowCount <= 0 && other.columnCount <= 0); }
 
-		bool equalDimensions() const { return rowCount == columnCount; }
+		inline bool equalDimensions() const { return rowCount == columnCount; }
 
-		bool equalDimensions(const CMatrix& other) const { return rowCount == other.rowCount && columnCount == other.columnCount; }
+		inline bool equalDimensions(const CMatrix& other) const { return rowCount == other.rowCount && columnCount == other.columnCount; }
 
-		bool canMultiply(const CMatrix& other) const { return columnCount == other.rowCount; }
+		inline bool canMultiply(const CMatrix& other) const { return columnCount == other.rowCount; }
 
 		// =========================================================================
 		// return vector matrix from rows/columns
@@ -141,53 +135,51 @@ namespace MyAlgebra
 		// algebraic operations
 		// =========================================================================
 
-		CMatrix operator*(const CMatrix& other) const { return std::move(this->multiplyMatrixOperation(other)); }
-		CMatrix multiply(const CMatrix& other) const { return std::move(this->multiplyMatrixOperation(other)); }
+		inline CMatrix operator*(const CMatrix& other) const { return std::move(this->multiplyMatrixOperation(other)); }
+		inline CMatrix multiply(const CMatrix& other) const { return std::move(this->multiplyMatrixOperation(other)); }
 
 		// multiply matrix by constant
-		CMatrix operator*(T multiplier) const { return std::move(this->multiplyConstantOperation(multiplier)); }
-		CMatrix multiply(T multiplier) const { return std::move(this->multiplyConstantOperation(multiplier)); }
+		inline CMatrix operator*(T multiplier) const { return std::move(this->multiplyConstantOperation(multiplier)); }
+		inline CMatrix multiply(T multiplier) const { return std::move(this->multiplyConstantOperation(multiplier)); }
 
-		CMatrix operator+(const CMatrix& other) const { return std::move(this->addMatrixOperation(other)); }
-		CMatrix add(const CMatrix& other) const { return std::move(this->addMatrixOperation(other)); }
+		inline CMatrix operator+(const CMatrix& other) const { return std::move(this->addMatrixOperation(other)); }
+		inline CMatrix add(const CMatrix& other) const { return std::move(this->addMatrixOperation(other)); }
 
-		CMatrix operator-(const CMatrix& other) const { return std::move(this->substractMatrixOperation(other)); }
-		CMatrix substract(const CMatrix& other) const { return std::move(this->substractMatrixOperation(other)); }
+		inline CMatrix operator-(const CMatrix& other) const { return std::move(this->substractMatrixOperation(other)); }
+		inline CMatrix substract(const CMatrix& other) const { return std::move(this->substractMatrixOperation(other)); }
 
 		// change sign of all elements of matrix
-		CMatrix operator-() const { return std::move(this->unaryOperation()); }
-		CMatrix unary() const { return std::move(this->unaryOperation()); }
+		inline CMatrix operator-() const { return std::move(this->unaryOperation()); }
+		inline CMatrix unary() const { return std::move(this->unaryOperation()); }
 
 		// transponse matrix
-		CMatrix operator~() const { return std::move(this->transponseOperation()); }
-		CMatrix transponse() const { return std::move(this->transponseOperation()); }
+		inline CMatrix operator~() const { return std::move(this->transponseOperation()); }
+		inline CMatrix transponse() const { return std::move(this->transponseOperation()); }
 
 		// accept only power >= 0:
 		//    power = 0  - return unity matrix
 		//    power = 1  - return copy of matrix
 		//    power > 1  - return power of matrix
-		CMatrix operator^(int power) const { return std::move(this->powerOperation(power)); }
-		CMatrix power(int power) const { return std::move(this->powerOperation(power)); }
+		inline CMatrix operator^(int power) const { return std::move(this->powerOperation(power)); }
+		inline CMatrix power(int power) const { return std::move(this->powerOperation(power)); }
 
 		// dot product (iloczyn skalarny) A^T*B
-		CMatrix dotProduct(const CMatrix& other) const { return std::move(this->dotProductOperation(other)); }
+		inline CMatrix dotProduct(const CMatrix& other) const { return std::move(this->dotProductOperation(other)); }
 
 		// compare matrix with accuracy to ALG_PRECISION
-		bool operator==(const CMatrix& rhs) const { return comparisionOperation(rhs); }
-		bool compareTo(const CMatrix& rhs) const { return comparisionOperation(rhs); }
+		inline bool operator==(const CMatrix& rhs) const { return comparisionOperation(rhs); }
+		inline bool compareTo(const CMatrix& rhs) const { return comparisionOperation(rhs); }
 
 		// =========================================================================
 		// I/O operations
 		// =========================================================================
 
-		bool readMatrixFromFile(std::string fileName);
+		FileError readMatrixFromFile(std::string fileName);
 
 		// only for tests - display matrix by rows on stdout
 		void display() const;
 
-		friend CMatrix operator*(T multiplier, const CMatrix& rhs) {
-			return std::move(rhs.multiplyConstantOperation(multiplier));
-		}
+		friend CMatrix operator*(T multiplier, const CMatrix& other) { return std::move(other.multiplyConstantOperation(multiplier)); }
 	};
 
 	template <typename T>
@@ -553,12 +545,36 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
+	void CMatrix<T>::set(int rowIndex, int columnIndex, T newVal) {
+		if (!isInitialized()) {
+			throw MatrixNotInitialized(OP_SET);
+		}
+		else if (columnIndex >= columnCount || columnIndex < 0
+			|| rowIndex >= rowCount || rowIndex < 0) {
+			throw TwoWrongArguments(OP_SET, rowIndex, columnIndex);
+		}
+		rowPtr[rowIndex][columnIndex] = newVal;
+	}
+
+	template <typename T>
+	T CMatrix<T>::get(int rowIndex, int columnIndex) {
+		if (!isInitialized()) {
+			throw MatrixNotInitialized(OP_GET);
+		}
+		else if (columnIndex >= columnCount || columnIndex < 0
+			|| rowIndex >= rowCount || rowIndex < 0) {
+			throw TwoWrongArguments(OP_GET, rowIndex, columnIndex);
+		}
+		return rowPtr[rowIndex][columnIndex];
+	}
+
+	template <typename T>
 	CMatrix<T> CMatrix<T>::getRowVector(int rowIndex) {
 		if (!isInitialized()) {
 			return CMatrix(nullptr, 0, 0);
 		}
 
-		if (rowIndex<0 || rowIndex>=rowCount) {
+		if (rowIndex >= rowCount || rowIndex < 0) {
 			throw WrongArgument(OP_GET_ROW, rowIndex);
 		}
 
@@ -567,7 +583,9 @@ namespace MyAlgebra
 			newRowPtr[0] = new(std::nothrow) T[columnCount];
 
 			if (newRowPtr[0] != nullptr) {
+
 				CMatrix retMatrix(newRowPtr, 1, columnCount);
+
 				for (int i = 0; i < columnCount; i++) {
 					retMatrix.set(0, i, this->rowPtr[rowIndex][i]);
 				}
@@ -585,7 +603,7 @@ namespace MyAlgebra
 		if (!isInitialized()) {
 			return CMatrix(nullptr, 0, 0);
 		}
-		if (columnIndex < 0 || columnIndex >= rowCount) {
+		if (columnIndex >= rowCount || columnIndex < 0) {
 			throw WrongArgument(OP_GET_COLUMN, columnIndex);
 		}
 
@@ -605,6 +623,9 @@ namespace MyAlgebra
 			}
 
 			CMatrix retMatrix(newColumnPtr, rowCount, 1);
+			if (!isInitialized(retMatrix)) {
+				return CMatrix(nullptr, 0, 0);
+			}
 			for (i = 0; i < rowCount; i++)
 			{
 				retMatrix.set(i, 0, this->rowPtr[i][columnIndex]);
@@ -617,91 +638,85 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	bool CMatrix<T>::readMatrixFromFile(std::string fileName) {
+	FileError CMatrix<T>::readMatrixFromFile(std::string fileName) {
 
 		if (rowPtr != nullptr) {
 			deallocateMemory();
 		}
 
 		std::ifstream fileHandler;
-		bool isOk = true;
 		fileHandler.open(fileName);
-		if (fileHandler.is_open()) {
+		if (!fileHandler.is_open()) {
+			return FileError(FileErrorCode::FILE_NOT_OPEN);
+		}
 
-			int fileRowCount = 0, fileColumnCount = 0;
+		int fileRowCount = 0, fileColumnCount = 0;
 
-			std::string bufer = "";
-			std::stringstream stream;
-			T val = 0;
+		std::string bufer = "";
+		std::stringstream stream;
 
-			if (std::getline(fileHandler, bufer)) {
-				fileRowCount++;
-				stream << bufer;
-				bufer = "";
-				//find column count
-				stream >> bufer;
-				while (!stream.eof()) {
-					fileColumnCount++;
-					bufer = "";
-					stream >> bufer;
-				}
-				//find row count
-				while (std::getline(fileHandler, bufer)) {
-					fileRowCount++;
-				}
-				// if dimensions are correct, allocate memory
-				if (fileColumnCount > 0 && fileRowCount > 0) {
-					if (allocateMemory(fileRowCount, fileColumnCount)) {
-
-						fileHandler.clear();
-						fileHandler.seekg(0);
-						stream = std::stringstream();
-						//load values from file into matrix
-
-						for (int i = 0, j; i < rowCount; i++) {
-							if (std::getline(fileHandler, bufer)) {
-								stream << bufer;
-								bufer = "";
-								for (j = 0; j < columnCount; j++) {
-									stream >> bufer;
-									if (std::stringstream(bufer) >> val) {
-										rowPtr[i][j] = val;
-									}
-									else {
-										//exit loops
-										i = rowCount;
-										isOk = false;
-										break;
-										// to do
-									}
-									bufer = "";
-								}
-								stream = std::stringstream();
-							}
-							else {
-								//exit loops
-								i = rowCount;
-								isOk = false;
-								// to do
-							}
-						}
-
-
-
-					}
-				}
-			}
+		if (!std::getline(fileHandler, bufer)) {
 			fileHandler.close();
+			return FileError(FileErrorCode::BAD_FIRST_GETLINE);
+		}
+		fileRowCount++;
+
+		stream << bufer;
+		bufer = "";
+		//find column count
+		stream >> bufer;
+		while (!stream.eof()) {
+			fileColumnCount++;
+			bufer = "";
+			stream >> bufer;
 		}
 
-		if (isOk) {
-			return true;
+		if (fileColumnCount < 1) {
+			fileHandler.close();
+			return FileError(FileErrorCode::BAD_COLUMN_COUNT);
 		}
-		rowPtr = nullptr;
-		rowCount = 0;
-		columnCount = 0;
-		return false;
 
+		//find row count
+		while (std::getline(fileHandler, bufer)) {
+			fileRowCount++;
+		}
+
+		// if dimensions are correct, allocate memory
+		if (!allocateMemory(fileRowCount, fileColumnCount)) {
+			fileHandler.close();
+			return FileError(FileErrorCode::BAD_MEM_ALLOC);
+		}
+
+		fileHandler.clear();
+		fileHandler.seekg(0);
+		stream = std::stringstream();
+		//load values from file into matrix
+		T val = 0;
+		for (int i = 0, j; i < rowCount; i++) {
+			if (!std::getline(fileHandler, bufer)) {
+				deallocateMemory();
+				fileHandler.close();
+				return FileError(FileErrorCode::BAD_GETLINE);
+			}
+
+			stream << bufer;
+			bufer = "";
+			for (j = 0; j < columnCount; j++) {
+				stream >> bufer;
+				if (!(std::stringstream(bufer) >> val)) {
+					deallocateMemory();
+					fileHandler.close();
+					return FileError(FileErrorCode::READ_BAD_VALUE);
+				}
+				rowPtr[i][j] = val;
+				bufer = "";
+			}
+			stream = std::stringstream();
+		}
+
+		fileHandler.close();
+
+		return FileError(FileErrorCode::OK);
 	}
 
 

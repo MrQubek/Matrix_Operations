@@ -154,6 +154,7 @@
     <ClInclude Include="CMatrix.h" />
     <ClInclude Include="const.h" />
     <ClInclude Include="FileError.h" />
+    <ClInclude Include="MatrixError.h" />
     <ClInclude Include="MatrixException.h" />
   </ItemGroup>
   <ItemGroup>

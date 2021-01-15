@@ -5,12 +5,12 @@
 class FileError
 {
 private:
-	ErrorCodes errorCode;
+	FileErrorCode errorCode;
 public:
-	FileError(ErrorCodes eCode) :errorCode(eCode) {}
+	FileError(FileErrorCode eCode) :errorCode(eCode) {}
 
-	ErrorCodes getErrorCode() { return errorCode; }
+	FileErrorCode getErrorCode() { return errorCode; }
 
-	operator bool() const { return errorCode == ErrorCodes::OK; }
+	operator bool() const { return errorCode == FileErrorCode::OK; }
 };
 
