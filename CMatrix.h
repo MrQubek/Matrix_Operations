@@ -1,6 +1,5 @@
 #pragma once
 
-#include<utility>
 #include<string>
 #include<cstdlib>
 #include<time.h>
@@ -8,10 +7,12 @@
 #include <iostream>
 #include <fstream>
 #include <sstream> 
+#include <thread> 
 
 #include "const.h"
 #include "MatrixException.h"
 #include "FileError.h"
+#include "MatrixError.h"
 
 namespace MyAlgebra
 {
@@ -26,7 +27,6 @@ namespace MyAlgebra
 
 		// return:	true if memory allocation for matrix successful
 		//			false otherwise
-		// warning: method do not check if memory is already allocated
 		bool allocateMemory(int rowCnt, int colCnt);
 
 		void deallocateMemory();
@@ -82,6 +82,7 @@ namespace MyAlgebra
 
 		inline CMatrix createMatrix(int rowCnt, int colCnt, bool randInit = false) { return std::move(CMatrix(rowCnt, colCnt, randInit)); }
 
+		inline CMatrix createMatrix(int rowCnt, T diagonal) { return std::move(CMatrix(rowCnt, diagonal)); }
 		// =========================================================================
 		// assign operators:
 		// =========================================================================
@@ -93,7 +94,7 @@ namespace MyAlgebra
 		const CMatrix& operator=(CMatrix&& other)noexcept;
 		const CMatrix& moveMatrix(CMatrix&& other);
 
-		// switch matrix to diagonal matrix 
+		// switch square matrix to diagonal matrix, throw exception otherwise 
 		const CMatrix& operator=(T diagonal);
 		const CMatrix& toDiagonal(T diagonal);
 
@@ -127,48 +128,48 @@ namespace MyAlgebra
 		// return vector matrix from rows/columns
 		// =========================================================================
 
-		CMatrix getRowVector(int rowIndex);
+		CMatrix getRowVector(const int rowIndex, MatrixError& error);
 
-		CMatrix getColumnVector(int columnIndex);
+		CMatrix getColumnVector(const int columnIndex, MatrixError& error);
 
 		// =========================================================================
 		// algebraic operations
 		// =========================================================================
 
 		inline CMatrix operator*(const CMatrix& other) const { return std::move(this->multiplyMatrixOperation(other)); }
-		inline CMatrix multiply(const CMatrix& other) const { return std::move(this->multiplyMatrixOperation(other)); }
+		CMatrix multiply(const CMatrix& other, MatrixError& error) const;
 
 		// multiply matrix by constant
 		inline CMatrix operator*(T multiplier) const { return std::move(this->multiplyConstantOperation(multiplier)); }
-		inline CMatrix multiply(T multiplier) const { return std::move(this->multiplyConstantOperation(multiplier)); }
+		CMatrix multiply(T multiplier, MatrixError& error) const;
 
 		inline CMatrix operator+(const CMatrix& other) const { return std::move(this->addMatrixOperation(other)); }
-		inline CMatrix add(const CMatrix& other) const { return std::move(this->addMatrixOperation(other)); }
+		CMatrix add(const CMatrix& other, MatrixError& error) const;
 
 		inline CMatrix operator-(const CMatrix& other) const { return std::move(this->substractMatrixOperation(other)); }
-		inline CMatrix substract(const CMatrix& other) const { return std::move(this->substractMatrixOperation(other)); }
+		CMatrix substract(const CMatrix& other, MatrixError& error) const;
 
 		// change sign of all elements of matrix
 		inline CMatrix operator-() const { return std::move(this->unaryOperation()); }
-		inline CMatrix unary() const { return std::move(this->unaryOperation()); }
+		CMatrix unary(MatrixError& error) const;
 
 		// transponse matrix
 		inline CMatrix operator~() const { return std::move(this->transponseOperation()); }
-		inline CMatrix transponse() const { return std::move(this->transponseOperation()); }
+		CMatrix transponse(MatrixError& error) const;
 
 		// accept only power >= 0:
 		//    power = 0  - return unity matrix
 		//    power = 1  - return copy of matrix
 		//    power > 1  - return power of matrix
 		inline CMatrix operator^(int power) const { return std::move(this->powerOperation(power)); }
-		inline CMatrix power(int power) const { return std::move(this->powerOperation(power)); }
+		CMatrix power(int power, MatrixError& error) const;
 
 		// dot product (iloczyn skalarny) A^T*B
-		inline CMatrix dotProduct(const CMatrix& other) const { return std::move(this->dotProductOperation(other)); }
+		CMatrix dotProduct(const CMatrix& other, MatrixError& error) const;
 
 		// compare matrix with accuracy to ALG_PRECISION
-		inline bool operator==(const CMatrix& rhs) const { return comparisionOperation(rhs); }
-		inline bool compareTo(const CMatrix& rhs) const { return comparisionOperation(rhs); }
+		inline bool operator==(const CMatrix& other) const { return comparisionOperation(other); }
+		bool compareTo(const CMatrix& other) const { return comparisionOperation(other); }
 
 		// =========================================================================
 		// I/O operations
@@ -194,6 +195,10 @@ namespace MyAlgebra
 		if (rowCnt <= 0 || colCnt <= 0) {
 			rowPtr = nullptr;
 			return false;
+		}
+
+		if (rowPtr != nullptr) {
+			deallocateMemory();
 		}
 
 		rowPtr = new(std::nothrow) T * [rowCnt];
@@ -437,7 +442,7 @@ namespace MyAlgebra
 			throw DimensionMismatchException(OP_DOT_PRODUCT, getDims(), other.getDims());
 		}
 
-		return std::move(this->transponse() * other);
+		return std::move(this->transponseOperation() * other);
 	}
 
 	template <typename T>
@@ -449,6 +454,7 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T>::CMatrix(int rowCnt, int colCnt, bool randInit) {
+		rowPtr = nullptr;
 		if (allocateMemory(rowCnt, colCnt)) {
 			if (randInit) {
 				populateMatrixWithRandomNumbers();
@@ -458,6 +464,7 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T>::CMatrix(int rowCnt, T diagonal) {
+		rowPtr = nullptr;
 		if (allocateMemory(rowCnt, rowCnt)) {
 			for (int i = 0, j = 0; i < rowCnt; i++) {
 				for (j = 0; j < rowCnt; j++) {
@@ -475,6 +482,7 @@ namespace MyAlgebra
 
 	template <typename T>
 	CMatrix<T>::CMatrix(const CMatrix& other) {
+		rowPtr = nullptr;
 		copyOperation(other);
 	}
 
@@ -569,13 +577,15 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::getRowVector(int rowIndex) {
+	CMatrix<T> CMatrix<T>::getRowVector(const int rowIndex, MatrixError& error) {
 		if (!isInitialized()) {
+			error = MatrixError(OP_GET_ROW, MatrixErrorCode::MATRIX_NOT_INITIALIZED);
 			return CMatrix(nullptr, 0, 0);
 		}
 
 		if (rowIndex >= rowCount || rowIndex < 0) {
-			throw WrongArgument(OP_GET_ROW, rowIndex);
+			error = MatrixError(OP_GET_ROW, MatrixErrorCode::WRONG_ARGUMENT);
+			return CMatrix(nullptr, 0, 0);
 		}
 
 		T** newRowPtr = new(std::nothrow) T * [1];
@@ -589,22 +599,26 @@ namespace MyAlgebra
 				for (int i = 0; i < columnCount; i++) {
 					retMatrix.set(0, i, this->rowPtr[rowIndex][i]);
 				}
+				error = MatrixError();
 				return std::move(retMatrix);
 			}
 			else {
 				delete[] newRowPtr;
 			}
 		}
+		error = MatrixError(OP_GET_COLUMN, MatrixErrorCode::BAD_MEM_ALLOC);
 		return CMatrix(nullptr, 0, 0);
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::getColumnVector(int columnIndex) {
+	CMatrix<T> CMatrix<T>::getColumnVector(const int columnIndex, MatrixError& error) {
 		if (!isInitialized()) {
+			error = MatrixError(OP_GET_COLUMN, MatrixErrorCode::MATRIX_NOT_INITIALIZED);
 			return CMatrix(nullptr, 0, 0);
 		}
 		if (columnIndex >= rowCount || columnIndex < 0) {
-			throw WrongArgument(OP_GET_COLUMN, columnIndex);
+			error = MatrixError(OP_GET_COLUMN, MatrixErrorCode::WRONG_ARGUMENT);
+			return CMatrix(nullptr, 0, 0);
 		}
 
 		T** newColumnPtr = new(std::nothrow) T * [rowCount];
@@ -618,6 +632,7 @@ namespace MyAlgebra
 						delete[] newColumnPtr[i];
 					}
 					delete[] newColumnPtr;
+					error = MatrixError(OP_GET_COLUMN, MatrixErrorCode::BAD_MEM_ALLOC);
 					return CMatrix(nullptr, 0, 0);
 				}
 			}
@@ -630,11 +645,152 @@ namespace MyAlgebra
 			{
 				retMatrix.set(i, 0, this->rowPtr[i][columnIndex]);
 			}
+			error = MatrixError();
 			return std::move(retMatrix);
 		}
 		else {
+			error = MatrixError(OP_GET_COLUMN, MatrixErrorCode::BAD_MEM_ALLOC);
 			return CMatrix(nullptr, 0, 0);
 		}
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::multiply(const CMatrix& other, MatrixError& error) const {
+		try {
+			error = MatrixError();
+			return std::move(this->multiplyMatrixOperation(other));
+		}
+		catch (const DimensionMismatchException& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::DIMENSION_MISMATCH);
+		}
+		catch (const MatrixNotInitialized& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::MATRIX_NOT_INITIALIZED);
+		}
+		catch (...) {
+			error = MatrixError(OP_MULTIPLY_MATRIX, MatrixErrorCode::UNKNOWN_ERROR);
+		}
+		return std::move(CMatrix<T>(nullptr, 0, 0));
+	}
+
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::multiply(T multiplier, MatrixError& error) const {
+		try {
+			error = MatrixError();
+			return std::move(this->multiplyConstantOperation(multiplier));
+		}
+		catch (const MatrixNotInitialized& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::MATRIX_NOT_INITIALIZED);
+		}
+		catch (...) {
+			error = MatrixError(OP_MULTIPLY_CONST, MatrixErrorCode::UNKNOWN_ERROR);
+		}
+		return std::move(CMatrix<T>(nullptr, 0, 0));
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::add(const CMatrix& other, MatrixError& error) const { 
+		try {
+			error = MatrixError();
+			return std::move(this->addMatrixOperation(other));
+		}
+		catch (const DimensionMismatchException& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::DIMENSION_MISMATCH);
+		}
+		catch (const MatrixNotInitialized& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::MATRIX_NOT_INITIALIZED);
+		}
+		catch (...) {
+			error = MatrixError(OP_ADD, MatrixErrorCode::UNKNOWN_ERROR);
+		}
+		return std::move(CMatrix<T>(nullptr, 0, 0));
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::substract(const CMatrix& other, MatrixError& error) const { 
+		try {
+			error = MatrixError();
+			return std::move(this->substractMatrixOperation(other));
+		}
+		catch (const DimensionMismatchException& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::DIMENSION_MISMATCH);
+		}
+		catch (const MatrixNotInitialized& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::MATRIX_NOT_INITIALIZED);
+		}
+		catch (...) {
+			error = MatrixError(OP_SUBSTRACT, MatrixErrorCode::UNKNOWN_ERROR);
+		}
+		return std::move(CMatrix<T>(nullptr, 0, 0));
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::unary(MatrixError& error) const { 
+		try {
+			error = MatrixError();
+			return std::move(this->unaryOperation());
+		}
+		catch (const MatrixNotInitialized& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::MATRIX_NOT_INITIALIZED);
+		}
+		catch (...) {
+			error = MatrixError(OP_UNARY, MatrixErrorCode::UNKNOWN_ERROR);
+		}
+		return std::move(CMatrix<T>(nullptr, 0, 0));
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::transponse(MatrixError& error) const { 
+		try {
+			error = MatrixError();
+			return std::move(this->transponseOperation());
+		}
+		catch (const MatrixNotInitialized& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::MATRIX_NOT_INITIALIZED);
+		}
+		catch (...) {
+			error = MatrixError(OP_TRANSPONSE, MatrixErrorCode::UNKNOWN_ERROR);
+		}
+		return std::move(CMatrix<T>(nullptr, 0, 0));
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::power(int power, MatrixError& error) const { 
+		try {
+			error = MatrixError();
+			return std::move(this->powerOperation(power));
+		}
+		catch (const MatrixNotInitialized& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::MATRIX_NOT_INITIALIZED);
+		}
+		catch (const NotSquareMatrix& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::NOT_SQUARE_MATRIX);
+		}
+		catch (const WrongArgument& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::WRONG_ARGUMENT);
+		}
+		catch (...) {
+			error = MatrixError(OP_POWER, MatrixErrorCode::UNKNOWN_ERROR);
+		}
+		return std::move(CMatrix<T>(nullptr, 0, 0));
+	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::dotProduct(const CMatrix& other, MatrixError& error) const {
+		try {
+			error = MatrixError();
+			return std::move(this->dotProductOperation(other));
+		}
+		catch (const DimensionMismatchException& e) {
+			error = MatrixError(e.getOpName(), MatrixErrorCode::DIMENSION_MISMATCH);
+		}
+		catch (const MatrixNotInitialized&) {
+			error = MatrixError(OP_DOT_PRODUCT, MatrixErrorCode::MATRIX_NOT_INITIALIZED);
+		}
+		catch (...) {
+			error = MatrixError(OP_DOT_PRODUCT, MatrixErrorCode::UNKNOWN_ERROR);
+		}
+		return std::move(CMatrix<T>(nullptr, 0, 0));
 	}
 
 	template <typename T>
@@ -719,7 +875,6 @@ namespace MyAlgebra
 		return FileError(FileErrorCode::OK);
 	}
 
-
 	template <typename T>
 	void CMatrix<T>::display() const {
 		for (int i = 0, j = 0; i < rowCount; i++) {
@@ -730,17 +885,4 @@ namespace MyAlgebra
 		}
 	}
 
-
-
-
-
-
-
-
-
-
-
 }
-
-
-

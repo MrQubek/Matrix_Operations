@@ -10,7 +10,7 @@ public:
 	MatrixException(std::string opName)
 		: operationName(opName) {}
 
-	std::string getOpName() { return operationName; }
+	std::string getOpName() const { return operationName; }
 };
 
 class MatrixNotInitialized : public MatrixException {
@@ -25,6 +25,8 @@ protected:
 public:
 	WrongArgument(std::string opName, int wrArg1)
 		: MatrixException(opName), wrongArgument1(wrArg1) {}
+
+	int getWronArg1() const{ return wrongArgument1; }
 };
 
 class TwoWrongArguments: public WrongArgument {
@@ -33,6 +35,7 @@ protected:
 public:
 	TwoWrongArguments(std::string opName, int wrArg1, int wrArg2)
 		: WrongArgument(opName, wrArg1), wrongArgument2(wrArg2) {}
+	int getWronArg2() const { return wrongArgument2; }
 };
 
 class NotSquareMatrix :public MatrixException {
@@ -41,7 +44,7 @@ protected:
 public:
 	NotSquareMatrix(std::string opName, std::pair<int, int> dim)
 		: MatrixException(opName), dimensions(dim) {}
-	std::pair<int, int> getDims() { return dimensions; }
+	std::pair<int, int> getDims() const { return dimensions; }
 };
 
 class DimensionMismatchException :public NotSquareMatrix {
@@ -51,7 +54,7 @@ public:
 	DimensionMismatchException(std::string opName, std::pair<int, int> dims, std::pair<int, int> dimOther)
 		: NotSquareMatrix(opName, dims), dimensionsOther(dimOther) {}
 
-	std::pair<int, int> getDimsOther() { return dimensionsOther; }
+	std::pair<int, int> getDimsOther() const { return dimensionsOther; }
 
 };
 

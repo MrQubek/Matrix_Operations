@@ -5,6 +5,8 @@
 
 #define SEPARATOR " "
 
+#define NEW_LINE "\n"
+
 #define TILDES "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 #define OP_DIAGONAL "Diagonal operation"
@@ -24,22 +26,4 @@
 #define OP_GET "Get operation"
 #define OP_SET "Set operation"
 
-
-enum class FileErrorCode : int {
-	OK = 0,
-	FILE_NOT_OPEN,
-	BAD_FIRST_GETLINE,
-	BAD_COLUMN_COUNT,
-	BAD_MEM_ALLOC,
-	BAD_GETLINE,
-	READ_BAD_VALUE
-};
-
-enum class MatrixErrorCode : int {
-	OK = 0,
-	MATRIX_NOT_INITIALIZED,
-	WRONG_ARGUMENT,
-	TWO_WRONG_ARGUMENTS,
-	NOT_SQUARE_MATRIX,
-	DIMENSION_MISMATCH
-};
+#define MAX_THREAD_COUNT 4

@@ -52,7 +52,7 @@ double test()
 {
 	// Przykładowe testowe obliczenie macierzowe. Podobne obliczenia będą 
 	// używane do oceny efektywności implementacji w konkursie.
-	const int SIZE = 2;
+	const int SIZE = 100;
 	const int ITER_CNT = 10;
 
 	T A(SIZE, SIZE, true);
