@@ -1,6 +1,6 @@
 #pragma once
 
-#define RANDOM_MAX_VALUE 4
+#define RANDOM_MAX_VALUE 2
 #define RANDOM_MIN_VALUE 0
 
 #define SEPARATOR " "
@@ -27,3 +27,6 @@
 #define OP_SET "Set operation"
 
 #define MAX_THREAD_COUNT 4
+
+#define OKK "OKK"
+#define ERROR "ERROR"

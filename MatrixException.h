@@ -11,6 +11,8 @@ public:
 		: operationName(opName) {}
 
 	std::string getOpName() const { return operationName; }
+
+	const char* what() const noexcept { return operationName.c_str(); }
 };
 
 class MatrixNotInitialized : public MatrixException {

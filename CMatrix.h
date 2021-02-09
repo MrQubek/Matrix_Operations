@@ -14,6 +14,9 @@
 #include "FileError.h"
 #include "MatrixError.h"
 
+// OPEN MP
+// GCC -f openMP
+
 namespace MyAlgebra
 {
 	template <typename T>
@@ -883,6 +886,8 @@ namespace MyAlgebra
 			}
 			std::cout << std::endl;
 		}
+		std::cout << std::endl;
+
 	}
 
 }

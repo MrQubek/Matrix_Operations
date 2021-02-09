@@ -86,7 +86,12 @@ int main(int argc, char* argv[])
 	printf("Wspolczynnik przyspieszenia Q: %5.2lf", t_ref / t_prog);
 	}
 	else {
+		try{
 		simpleTests();
+		}
+		catch (std::exception & e){
+			std::cout << e.what() << std::endl;
+		}
 	}
 	_CrtDumpMemoryLeaks();
 

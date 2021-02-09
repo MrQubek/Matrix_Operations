@@ -193,4 +193,42 @@ inline void simpleTests() {
 		matrix.display();
 	}
 
+	std::cout << TILDES << std::endl;
+	{
+		MyAlgebra::CMatrix<int> matrix = MyAlgebra::CMatrix<int>(2, 2, true);
+		MyAlgebra::CMatrix<int> matrix2 = MyAlgebra::CMatrix<int>(2, 2, true);
+		MyAlgebra::CMatrix<int> matrix3 = MyAlgebra::CMatrix<int>(2, 2, true);
+
+		matrix.display();
+		matrix2.display();
+		matrix3.display();
+
+		(matrix* matrix2).display();
+
+		matrix = matrix * matrix2 - matrix3;
+
+		matrix.display();
+	}
+
+	std::cout << TILDES << std::endl;
+	{
+		MyAlgebra::CMatrix<int> matrix = MyAlgebra::CMatrix<int>(2, 2, true);
+		MyAlgebra::CMatrix<int> matrix2 = MyAlgebra::CMatrix<int>(2, 2, true);
+		MyAlgebra::CMatrix<int> matrix3 = MyAlgebra::CMatrix<int>(2, 2, true);
+
+		matrix.display();
+		matrix2.display();
+		matrix3.display();
+
+		matrix = matrix.dotProduct(matrix2,errCode) - matrix3;
+
+		if (errCode) {
+			std::cout << OKK << NEW_LINE;
+		} else {
+			std::cout << ERROR << NEW_LINE;
+		}
+
+		matrix.display();
+	}
+
 }
