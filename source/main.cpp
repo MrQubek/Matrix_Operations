@@ -52,7 +52,7 @@ double test()
 {
 	// Przykładowe testowe obliczenie macierzowe. Podobne obliczenia będą 
 	// używane do oceny efektywności implementacji w konkursie.
-	const int SIZE = 100;
+	const int SIZE = 1000;
 	const int ITER_CNT = 10;
 
 	T A(SIZE, SIZE, true);
@@ -64,8 +64,10 @@ double test()
 	{
 		B = ((0.1f * i) * A + B * B) * 1.e-4f;
 		B = -B * ~(A + B);
+		//B = A + B + A + A + B + A + B;
+		//B = B+A+B+A+A+B;
 	}
-	W = (B - A);
+	W = (B + A);
 
 	double exec_time = mygettime() - t1;
 
@@ -77,7 +79,7 @@ double test()
 
 int main(int argc, char* argv[])
 {
-	if(false){
+	if(0){
 	double t_prog = test<MyAlgebra::CMatrix<float>>();
 	double t_ref = test<RefAlgebra::CMtx>();
 

@@ -7,15 +7,14 @@
 #include <iostream>
 #include <fstream>
 #include <sstream> 
-#include <thread> 
+
+#include <immintrin.h>
 
 #include "const.h"
 #include "MatrixException.h"
 #include "FileError.h"
 #include "MatrixError.h"
 
-// OPEN MP
-// GCC -f openMP
 
 namespace MyAlgebra
 {
@@ -47,6 +46,8 @@ namespace MyAlgebra
 		CMatrix<T> multiplyConstantOperation(T multiplier)const;
 
 		CMatrix<T> multiplyMatrixOperation(const CMatrix<T>& other) const;
+
+		void threadMultiplyOperation(CMatrix<T>& retMatrix, const CMatrix<T>& other, int indexColumnStart, int indexColumnEnd) const;
 
 		CMatrix<T> addMatrixOperation(const CMatrix<T>& other)const;
 
@@ -187,7 +188,7 @@ namespace MyAlgebra
 	};
 
 	template <typename T>
-	const float MyAlgebra::CMatrix<T>::ALG_PRECISION = 1e-6f;
+	const float MyAlgebra::CMatrix<T>::ALG_PRECISION = MAX_COMPARE_ERROR;
 
 	// =========================================================================
 	// methods declarations
@@ -240,7 +241,7 @@ namespace MyAlgebra
 
 	template <typename T>
 	void CMatrix<T>::copyMatrixValues(const CMatrix<T>& other) {
-		for (int i = 0, j = 0; i < other.columnCount; i++) {
+		for (int i = 0, j = 0; i < other.rowCount; i++) {
 			for (j = 0; j < other.columnCount; j++) {
 				this->rowPtr[i][j] = other.rowPtr[i][j];
 			}
@@ -319,40 +320,13 @@ namespace MyAlgebra
 			throw MatrixNotInitialized(OP_MULTIPLY_MATRIX);
 		}
 
-		T fieldSum;
-		for (int i = 0, j, r; i < retMatrix.getRowCount(); i++) {
-			for (j = 0; j < retMatrix.getColumnCount(); j++) {
-				for (r = 0, fieldSum = 0; r < this->columnCount; r++) {
-					fieldSum += +rowPtr[i][r] * other.rowPtr[r][j];
-				}
-				retMatrix[i][j] = fieldSum;
-			}
-		}
+		const int retMatRowCnt = retMatrix.getRowCount();
+		const int colCnt = this->columnCount;
+
+		threadMultiplyOperation(retMatrix, other ,0,other.columnCount-1);
 
 		return std::move(retMatrix);
-	}
-
-	template <typename T>
-	CMatrix<T> CMatrix<T>::addMatrixOperation(const CMatrix<T>& other) const {
-
-		if (!equalDimensions(other)) {
-			throw DimensionMismatchException(OP_ADD, getDims(), other.getDims());
-		}
-
-		CMatrix<T> retMatrix(*this);
-
-		if (!isInitialized(retMatrix)) {
-			throw MatrixNotInitialized(OP_ADD);
-		}
-
-		for (int i = 0, j; i < rowCount; i++) {
-			for (j = 0; j < columnCount; j++) {
-				retMatrix.rowPtr[i][j] += other.rowPtr[i][j];
-			}
-		}
-		return std::move(retMatrix);
-	}
-
+}
 	template <typename T>
 	CMatrix<T> CMatrix<T>::substractMatrixOperation(const CMatrix<T>& other) const {
 
