@@ -7,8 +7,10 @@
 #include <iostream>
 #include <fstream>
 #include <sstream> 
+#include <vector>
 
 #include <immintrin.h>
+#include <thread> 
 
 #include "const.h"
 #include "MatrixException.h"
@@ -320,13 +322,49 @@ namespace MyAlgebra
 			throw MatrixNotInitialized(OP_MULTIPLY_MATRIX);
 		}
 
-		const int retMatRowCnt = retMatrix.getRowCount();
-		const int colCnt = this->columnCount;
+		if (MAX_THREAD_COUNT < 2) {
+			threadMultiplyOperation(retMatrix, other, 0, other.columnCount - 1);
+		}
+		else {
 
-		threadMultiplyOperation(retMatrix, other ,0,other.columnCount-1);
+			int threadCount = (other.columnCount < MAX_THREAD_COUNT ? other.columnCount : MAX_THREAD_COUNT);
+
+			int* columnSegmentIndexStart = new int[threadCount];
+			int* columnSegmentIndexEnd = new int[threadCount];
+
+			//equally distribute columns among threads
+			int i;
+			int remainderColumns = other.columnCount % threadCount;
+			columnSegmentIndexStart[0] = 0;
+			for (i = 0; i < threadCount - 1; i++) {
+				if (remainderColumns > 0) {
+					columnSegmentIndexEnd[i] = (other.columnCount -1) / threadCount + columnSegmentIndexStart[i];
+					remainderColumns--;
+				}
+				else {
+					columnSegmentIndexEnd[i] = (other.columnCount - 1) / threadCount + columnSegmentIndexStart[i] - 1;
+				}
+				columnSegmentIndexStart[i + 1] = columnSegmentIndexEnd[i] + 1;
+			}
+			columnSegmentIndexEnd[threadCount - 1] = other.columnCount - 1;
+
+			//start threads
+			std::vector<std::thread> threads;
+			for (i = 0; i < threadCount; i++) {
+				threads.push_back(std::thread(&CMatrix<T>::threadMultiplyOperation, &*this, std::ref(retMatrix), std::ref(other),
+					columnSegmentIndexStart[i], columnSegmentIndexEnd[i]));
+			}
+			
+			delete[] columnSegmentIndexStart;
+			delete[] columnSegmentIndexEnd;
+
+			for (i = 0; i < threads.size(); i++) {
+				threads[i].join();
+			}
+		}
 
 		return std::move(retMatrix);
-}
+	}
 	template <typename T>
 	CMatrix<T> CMatrix<T>::substractMatrixOperation(const CMatrix<T>& other) const {
 
@@ -666,7 +704,7 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::add(const CMatrix& other, MatrixError& error) const { 
+	CMatrix<T> CMatrix<T>::add(const CMatrix& other, MatrixError& error) const {
 		try {
 			error = MatrixError();
 			return std::move(this->addMatrixOperation(other));
@@ -684,7 +722,7 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::substract(const CMatrix& other, MatrixError& error) const { 
+	CMatrix<T> CMatrix<T>::substract(const CMatrix& other, MatrixError& error) const {
 		try {
 			error = MatrixError();
 			return std::move(this->substractMatrixOperation(other));
@@ -702,7 +740,7 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::unary(MatrixError& error) const { 
+	CMatrix<T> CMatrix<T>::unary(MatrixError& error) const {
 		try {
 			error = MatrixError();
 			return std::move(this->unaryOperation());
@@ -717,7 +755,7 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::transponse(MatrixError& error) const { 
+	CMatrix<T> CMatrix<T>::transponse(MatrixError& error) const {
 		try {
 			error = MatrixError();
 			return std::move(this->transponseOperation());
@@ -732,7 +770,7 @@ namespace MyAlgebra
 	}
 
 	template <typename T>
-	CMatrix<T> CMatrix<T>::power(int power, MatrixError& error) const { 
+	CMatrix<T> CMatrix<T>::power(int power, MatrixError& error) const {
 		try {
 			error = MatrixError();
 			return std::move(this->powerOperation(power));

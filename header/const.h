@@ -7,7 +7,7 @@
 // 0 - no limits on value of generated random numbers
 // 1 - Value of generated random numbers constrained by RANDOM_MIN_VALUE and RANDOM_MAX_VALUE
 #define LIMIT_MAX_RANDOM_VALUE 1
-#define RANDOM_MAX_VALUE 5
+#define RANDOM_MAX_VALUE 2
 #define RANDOM_MIN_VALUE 0
 
 #define SIMD_INT_LENGTH 8
@@ -35,6 +35,8 @@
 
 #define OP_GET "Get operation"
 #define OP_SET "Set operation"
+
+#define THREAD " thread"
 
 #define OKK "OKK"
 #define ERROR "ERROR"

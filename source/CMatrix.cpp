@@ -62,6 +62,10 @@ template <>
 void MyAlgebra::CMatrix<int>::threadMultiplyOperation(
 	CMatrix<int>& retMatrix, const CMatrix<int>& other, const int otherColumnIndexStart, const int otherColumnIndexEnd) const {
 
+	if (otherColumnIndexStart > otherColumnIndexEnd) {
+		throw(TwoWrongArguments("OP_MULTIPLY_MAT_THREAD", otherColumnIndexStart, otherColumnIndexEnd));
+	}
+
 	int i, j, k;
 
 	const int commonDimLength = this->getColumnCount();
@@ -72,7 +76,7 @@ void MyAlgebra::CMatrix<int>::threadMultiplyOperation(
 	int accArray[SIMD_INT_LENGTH];
 
 	for (int otherColumnIndex = otherColumnIndexStart; otherColumnIndex <= otherColumnIndexEnd; otherColumnIndex++) {
-		
+
 		for (i = 0; i < commonDimLength; i++) {
 			otherColumnPtr[i] = other.rowPtr[i][otherColumnIndex];
 		}
@@ -83,7 +87,7 @@ void MyAlgebra::CMatrix<int>::threadMultiplyOperation(
 			//multiply and add elems 
 			for (j = 0; j < commonDimLength - commonDimLength % SIMD_INT_LENGTH; j += SIMD_FLOAT_LENGTH) {
 				accVector = _mm256_add_epi32(_mm256_mullo_epi32(
-					_mm256_loadu_epi32(& this->rowPtr[i][j]), _mm256_loadu_epi32(&otherColumnPtr[j])),
+					_mm256_loadu_epi32(&this->rowPtr[i][j]), _mm256_loadu_epi32(&otherColumnPtr[j])),
 					accVector);
 			}
 
@@ -103,7 +107,11 @@ void MyAlgebra::CMatrix<int>::threadMultiplyOperation(
 
 template <>
 void MyAlgebra::CMatrix<float>::threadMultiplyOperation(
-	CMatrix<float>& retMatrix, const CMatrix<float>& other, const int otherColumnIndexStart, const int otherColumnIndexEnd) const{
+	CMatrix<float>& retMatrix, const CMatrix<float>& other, const int otherColumnIndexStart, const int otherColumnIndexEnd) const {
+	
+	if (otherColumnIndexStart > otherColumnIndexEnd) {
+		throw(TwoWrongArguments("OP_MULTIPLY_MAT_THREAD", otherColumnIndexStart, otherColumnIndexEnd));
+	}
 
 	int i, j, k;
 
@@ -145,6 +153,10 @@ void MyAlgebra::CMatrix<float>::threadMultiplyOperation(
 template <>
 void MyAlgebra::CMatrix<double>::threadMultiplyOperation(
 	CMatrix<double>& retMatrix, const CMatrix<double>& other, const int otherColumnIndexStart, const int otherColumnIndexEnd) const {
+
+	if (otherColumnIndexStart > otherColumnIndexEnd) {
+		throw(TwoWrongArguments("OP_MULTIPLY_MAT_THREAD", otherColumnIndexStart, otherColumnIndexEnd));
+	}
 
 	int i, j, k;
 	const int commonDimLength = this->getColumnCount();

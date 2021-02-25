@@ -11,8 +11,8 @@ inline void simpleTests() {
 
 	std::cout << TILDES << std::endl;
 	{
-		MyAlgebra::CMatrix<TYPE> matrix = MyAlgebra::CMatrix<TYPE>(2, 3, true);
-		MyAlgebra::CMatrix<TYPE> matrix2 = MyAlgebra::CMatrix<TYPE>(3, 2, true);
+		MyAlgebra::CMatrix<TYPE> matrix = MyAlgebra::CMatrix<TYPE>(4, 27, true);
+		MyAlgebra::CMatrix<TYPE> matrix2 = MyAlgebra::CMatrix<TYPE>(27, 6, true);
 
 
 		matrix.display();
