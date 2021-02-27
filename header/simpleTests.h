@@ -22,10 +22,10 @@ inline void simpleTests() {
 
 		std::cout << NEW_LINE;
 
-		(matrix * matrix2).display();
+		(matrix + matrix2).display();
 		std::cout << NEW_LINE;
 
-		(matrix * matrix2).display();
+		(matrix + matrix2).display();
 
 		if (errCode) {
 			std::cout << OKK << NEW_LINE;

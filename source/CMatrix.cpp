@@ -59,11 +59,79 @@ void MyAlgebra::CMatrix<double>::populateMatrixWithRandomNumbers() {
 }
 
 template <>
+void MyAlgebra::CMatrix<int>::threadMultiplyConstantOperation(
+	CMatrix<int>& retMatrix, int rowIndexStart, int rowIndexEnd, int multiplier) const {
+
+	if (rowIndexStart > rowIndexEnd) {
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_CONST + OP_THREAD, rowIndexStart, rowIndexEnd));
+	}
+
+	int i;
+	int j;
+
+	__m256i multiplierVector = _mm256_set1_epi32(multiplier);
+	for (i = rowIndexStart; i <= rowIndexEnd; i++) {
+		for (j = 0; j < columnCount - columnCount % SIMD_INT_LENGTH; j += SIMD_INT_LENGTH) {
+			_mm256_storeu_epi32(&retMatrix.rowPtr[i][j], _mm256_mullo_epi32(
+				_mm256_loadu_epi32(&retMatrix.rowPtr[i][j]), multiplierVector));
+		}
+		for (; j < columnCount; j++) {
+			retMatrix.rowPtr[i][j] *= multiplier;
+		}
+	}
+}
+
+
+template <>
+void MyAlgebra::CMatrix<float>::threadMultiplyConstantOperation(
+	CMatrix<float>& retMatrix, int rowIndexStart, int rowIndexEnd, float multiplier) const {
+
+	if (rowIndexStart > rowIndexEnd) {
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_CONST + OP_THREAD, rowIndexStart, rowIndexEnd));
+	}
+
+	int i;
+	int j;
+	__m256 multiplierVector = _mm256_set1_ps(multiplier);
+	for (int i = rowIndexStart; i <= rowIndexEnd; i++) {
+		for (j = 0; j < columnCount - columnCount % SIMD_FLOAT_LENGTH; j += SIMD_FLOAT_LENGTH) {
+			_mm256_storeu_ps(&retMatrix.rowPtr[i][j], _mm256_mul_ps(
+				_mm256_loadu_ps(&retMatrix.rowPtr[i][j]), multiplierVector));
+		}
+		for (; j < columnCount; j++) {
+			retMatrix.rowPtr[i][j] *= multiplier;
+		}
+	}
+}
+
+template <>
+void MyAlgebra::CMatrix<double>::threadMultiplyConstantOperation(
+	CMatrix<double>& retMatrix, int rowIndexStart, int rowIndexEnd, double multiplier) const {
+
+	if (rowIndexStart > rowIndexEnd) {
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_CONST + OP_THREAD, rowIndexStart, rowIndexEnd));
+	}
+
+	int i;
+	int j;
+	__m256d multiplierVector = _mm256_set1_pd(multiplier);
+	for (int i = rowIndexStart; i <= rowIndexEnd; i++) {
+		for (j = 0; j < columnCount - columnCount % SIMD_DOUBLE_LENGTH; j += SIMD_DOUBLE_LENGTH) {
+			_mm256_storeu_pd(&retMatrix.rowPtr[i][j], _mm256_mul_pd(
+				_mm256_loadu_pd(&retMatrix.rowPtr[i][j]), multiplierVector));
+		}
+		for (; j < columnCount; j++) {
+			retMatrix.rowPtr[i][j] *= multiplier;
+		}
+	}
+}
+
+template <>
 void MyAlgebra::CMatrix<int>::threadMultiplyOperation(
 	CMatrix<int>& retMatrix, const CMatrix<int>& other, const int otherColumnIndexStart, const int otherColumnIndexEnd) const {
 
 	if (otherColumnIndexStart > otherColumnIndexEnd) {
-		throw(TwoWrongArguments("OP_MULTIPLY_MAT_THREAD", otherColumnIndexStart, otherColumnIndexEnd));
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_MATRIX + OP_THREAD, otherColumnIndexStart, otherColumnIndexEnd));
 	}
 
 	int i, j, k;
@@ -108,9 +176,9 @@ void MyAlgebra::CMatrix<int>::threadMultiplyOperation(
 template <>
 void MyAlgebra::CMatrix<float>::threadMultiplyOperation(
 	CMatrix<float>& retMatrix, const CMatrix<float>& other, const int otherColumnIndexStart, const int otherColumnIndexEnd) const {
-	
+
 	if (otherColumnIndexStart > otherColumnIndexEnd) {
-		throw(TwoWrongArguments("OP_MULTIPLY_MAT_THREAD", otherColumnIndexStart, otherColumnIndexEnd));
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_MATRIX + OP_THREAD, otherColumnIndexStart, otherColumnIndexEnd));
 	}
 
 	int i, j, k;
@@ -155,7 +223,7 @@ void MyAlgebra::CMatrix<double>::threadMultiplyOperation(
 	CMatrix<double>& retMatrix, const CMatrix<double>& other, const int otherColumnIndexStart, const int otherColumnIndexEnd) const {
 
 	if (otherColumnIndexStart > otherColumnIndexEnd) {
-		throw(TwoWrongArguments("OP_MULTIPLY_MAT_THREAD", otherColumnIndexStart, otherColumnIndexEnd));
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_MATRIX + OP_THREAD, otherColumnIndexStart, otherColumnIndexEnd));
 	}
 
 	int i, j, k;
@@ -195,19 +263,16 @@ void MyAlgebra::CMatrix<double>::threadMultiplyOperation(
 }
 
 template <>
-MyAlgebra::CMatrix<int> MyAlgebra::CMatrix<int>::addMatrixOperation(const CMatrix<int>& other)const {
-	if (!equalDimensions(other)) {
-		throw DimensionMismatchException(OP_ADD, getDims(), other.getDims());
+void MyAlgebra::CMatrix<int>::threadAddOperation(
+	CMatrix<int>& retMatrix, const CMatrix<int>& other, int rowIndexStart, int rowIndexEnd) const {
+
+	if (rowIndexStart > rowIndexEnd) {
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_CONST + OP_THREAD, rowIndexStart, rowIndexEnd));
 	}
 
-	CMatrix<int> retMatrix(*this);
-
-	if (!isInitialized(retMatrix)) {
-		throw MatrixNotInitialized(OP_ADD);
-	}
-
+	int i;
 	int j;
-	for (int i = 0; i < rowCount; i++) {
+	for (i = rowIndexStart; i <= rowIndexEnd; i++) {
 		for (j = 0; j < columnCount - columnCount % SIMD_INT_LENGTH; j += SIMD_INT_LENGTH) {
 			_mm256_storeu_epi32(&retMatrix.rowPtr[i][j], _mm256_add_epi32(
 				_mm256_loadu_epi32(&retMatrix.rowPtr[i][j]), _mm256_loadu_epi32(&other.rowPtr[i][j])));
@@ -216,24 +281,20 @@ MyAlgebra::CMatrix<int> MyAlgebra::CMatrix<int>::addMatrixOperation(const CMatri
 			retMatrix.rowPtr[i][j] += other.rowPtr[i][j];
 		}
 	}
-	return std::move(retMatrix);
 }
 
 
 template <>
-MyAlgebra::CMatrix<float> MyAlgebra::CMatrix<float>::addMatrixOperation(const CMatrix<float>& other)const {
-	if (!equalDimensions(other)) {
-		throw DimensionMismatchException(OP_ADD, getDims(), other.getDims());
+void MyAlgebra::CMatrix<float>::threadAddOperation(
+	CMatrix<float>& retMatrix, const CMatrix<float>& other, int rowIndexStart, int rowIndexEnd) const {
+
+	if (rowIndexStart > rowIndexEnd) {
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_CONST + OP_THREAD, rowIndexStart, rowIndexEnd));
 	}
 
-	CMatrix<float> retMatrix(*this);
-
-	if (!isInitialized(retMatrix)) {
-		throw MatrixNotInitialized(OP_ADD);
-	}
-
+	int i;
 	int j;
-	for (int i = 0; i < rowCount; i++) {
+	for (int i = rowIndexStart; i <= rowIndexEnd; i++) {
 		for (j = 0; j < columnCount - columnCount % SIMD_FLOAT_LENGTH; j += SIMD_FLOAT_LENGTH) {
 			_mm256_storeu_ps(&retMatrix.rowPtr[i][j], _mm256_add_ps(
 				_mm256_loadu_ps(&retMatrix.rowPtr[i][j]), _mm256_loadu_ps(&other.rowPtr[i][j])));
@@ -242,24 +303,19 @@ MyAlgebra::CMatrix<float> MyAlgebra::CMatrix<float>::addMatrixOperation(const CM
 			retMatrix.rowPtr[i][j] += other.rowPtr[i][j];
 		}
 	}
-
-	return std::move(retMatrix);
 }
 
 template <>
-MyAlgebra::CMatrix<double> MyAlgebra::CMatrix<double>::addMatrixOperation(const CMatrix<double>& other)const {
-	if (!equalDimensions(other)) {
-		throw DimensionMismatchException(OP_ADD, getDims(), other.getDims());
+void MyAlgebra::CMatrix<double>::threadAddOperation(
+	CMatrix<double>& retMatrix, const CMatrix<double>& other, int rowIndexStart, int rowIndexEnd) const {
+
+	if (rowIndexStart > rowIndexEnd) {
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_CONST + OP_THREAD, rowIndexStart, rowIndexEnd));
 	}
 
-	CMatrix<double> retMatrix(*this);
-
-	if (!isInitialized(retMatrix)) {
-		throw MatrixNotInitialized(OP_ADD);
-	}
-
+	int i;
 	int j;
-	for (int i = 0; i < rowCount; i++) {
+	for (int i = rowIndexStart; i <= rowIndexEnd; i++) {
 		for (j = 0; j < columnCount - columnCount % SIMD_DOUBLE_LENGTH; j += SIMD_DOUBLE_LENGTH) {
 			_mm256_storeu_pd(&retMatrix.rowPtr[i][j], _mm256_add_pd(
 				_mm256_loadu_pd(&retMatrix.rowPtr[i][j]), _mm256_loadu_pd(&other.rowPtr[i][j])));
@@ -268,8 +324,72 @@ MyAlgebra::CMatrix<double> MyAlgebra::CMatrix<double>::addMatrixOperation(const 
 			retMatrix.rowPtr[i][j] += other.rowPtr[i][j];
 		}
 	}
-	return std::move(retMatrix);
 }
+
+template <>
+void MyAlgebra::CMatrix<int>::threadSubstractOperation(
+	CMatrix<int>& retMatrix, const CMatrix<int>& other, int rowIndexStart, int rowIndexEnd) const {
+
+	if (rowIndexStart > rowIndexEnd) {
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_CONST + OP_THREAD, rowIndexStart, rowIndexEnd));
+	}
+
+	int i;
+	int j;
+	for (i = rowIndexStart; i <= rowIndexEnd; i++) {
+		for (j = 0; j < columnCount - columnCount % SIMD_INT_LENGTH; j += SIMD_INT_LENGTH) {
+			_mm256_storeu_epi32(&retMatrix.rowPtr[i][j], _mm256_sub_epi32(
+				_mm256_loadu_epi32(&retMatrix.rowPtr[i][j]), _mm256_loadu_epi32(&other.rowPtr[i][j])));
+		}
+		for (; j < columnCount; j++) {
+			retMatrix.rowPtr[i][j] -= other.rowPtr[i][j];
+		}
+	}
+}
+
+
+template <>
+void MyAlgebra::CMatrix<float>::threadSubstractOperation(
+	CMatrix<float>& retMatrix, const CMatrix<float>& other, int rowIndexStart, int rowIndexEnd) const {
+
+	if (rowIndexStart > rowIndexEnd) {
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_CONST + OP_THREAD, rowIndexStart, rowIndexEnd));
+	}
+
+	int i;
+	int j;
+	for (int i = rowIndexStart; i <= rowIndexEnd; i++) {
+		for (j = 0; j < columnCount - columnCount % SIMD_FLOAT_LENGTH; j += SIMD_FLOAT_LENGTH) {
+			_mm256_storeu_ps(&retMatrix.rowPtr[i][j], _mm256_sub_ps(
+				_mm256_loadu_ps(&retMatrix.rowPtr[i][j]), _mm256_loadu_ps(&other.rowPtr[i][j])));
+		}
+		for (; j < columnCount; j++) {
+			retMatrix.rowPtr[i][j] -= other.rowPtr[i][j];
+		}
+	}
+}
+
+template <>
+void MyAlgebra::CMatrix<double>::threadSubstractOperation(
+	CMatrix<double>& retMatrix, const CMatrix<double>& other, int rowIndexStart, int rowIndexEnd) const {
+
+	if (rowIndexStart > rowIndexEnd) {
+		throw(TwoWrongArguments((std::string)OP_MULTIPLY_CONST + OP_THREAD, rowIndexStart, rowIndexEnd));
+	}
+
+	int i;
+	int j;
+	for (int i = rowIndexStart; i <= rowIndexEnd; i++) {
+		for (j = 0; j < columnCount - columnCount % SIMD_DOUBLE_LENGTH; j += SIMD_DOUBLE_LENGTH) {
+			_mm256_storeu_pd(&retMatrix.rowPtr[i][j], _mm256_sub_pd(
+				_mm256_loadu_pd(&retMatrix.rowPtr[i][j]), _mm256_loadu_pd(&other.rowPtr[i][j])));
+		}
+		for (; j < columnCount; j++) {
+			retMatrix.rowPtr[i][j] -= other.rowPtr[i][j];
+		}
+	}
+}
+
 
 template <>
 bool MyAlgebra::CMatrix<int>::comparisionOperation(const  MyAlgebra::CMatrix<int>& other) const {

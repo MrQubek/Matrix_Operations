@@ -64,8 +64,6 @@ double test()
 	{
 		B = ((0.1f * i) * A + B * B) * 1.e-4f;
 		B = -B * ~(A + B);
-		//B = A + B + A + A + B + A + B;
-		//B = B+A+B+A+A+B;
 	}
 	W = (B + A);
 
@@ -81,7 +79,7 @@ int main(int argc, char* argv[])
 {
 	if(1){
 	double t_prog = test<MyAlgebra::CMatrix<float>>();
-	double t_ref = 105.0;// test<RefAlgebra::CMtx>();
+	double t_ref = 93;//test<RefAlgebra::CMtx>();
 
 	printf("Czas wykonania referencyjny: %7.2lfs\n", t_ref);
 	printf("Czas wykonania testowany:    %7.2lfs\n", t_prog);

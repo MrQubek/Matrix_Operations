@@ -47,13 +47,19 @@ namespace MyAlgebra
 
 		CMatrix<T> multiplyConstantOperation(T multiplier)const;
 
+		void threadMultiplyConstantOperation(CMatrix<T>& retMatrix, int rowIndexStart, int rowIndexEnd, T multiplier) const;
+
 		CMatrix<T> multiplyMatrixOperation(const CMatrix<T>& other) const;
 
 		void threadMultiplyOperation(CMatrix<T>& retMatrix, const CMatrix<T>& other, int indexColumnStart, int indexColumnEnd) const;
 
 		CMatrix<T> addMatrixOperation(const CMatrix<T>& other)const;
 
+		void threadAddOperation(CMatrix<T>& retMatrix, const CMatrix<T>& other, int rowIndexStart, int rowIndexEnd) const;
+
 		CMatrix<T> substractMatrixOperation(const CMatrix<T>& other)const;
+
+		void threadSubstractOperation(CMatrix<T>& retMatrix, const CMatrix<T>& other, int rowIndexStart, int rowIndexEnd) const;
 
 		CMatrix<T> unaryOperation()const;
 
@@ -301,11 +307,48 @@ namespace MyAlgebra
 			throw MatrixNotInitialized(OP_MULTIPLY_CONST);
 		}
 
-		for (int i = 0, j; i < rowCount; i++) {
-			for (j = 0; j < columnCount; j++) {
-				retMatrix.rowPtr[i][j] *= multiplier;
+
+		if (MAX_THREAD_COUNT < 2 || MIN_CELLS_FOR_MULTITHREADING_IN_SIMPLE_OPS < (long)rowCount*columnCount) {
+			threadMultiplyConstantOperation(retMatrix, 0, this->rowCount - 1, multiplier);
+		}
+		else {
+
+			int threadCount = (this->rowCount < MAX_THREAD_COUNT ? this->rowCount : MAX_THREAD_COUNT);
+
+			int* rowSegmentIndexStart = new int[threadCount];
+			int* rowSegmentIndexEnd = new int[threadCount];
+
+			//equally distribute columns among threads
+			int i;
+			int remainderRows = this->rowCount % threadCount;
+			rowSegmentIndexStart[0] = 0;
+			for (i = 0; i < threadCount - 1; i++) {
+				if (remainderRows > 0) {
+					rowSegmentIndexEnd[i] = (this->rowCount - 1) / threadCount + rowSegmentIndexStart[i];
+					remainderRows--;
+				}
+				else {
+					rowSegmentIndexEnd[i] = (this->rowCount - 1) / threadCount + rowSegmentIndexStart[i] - 1;
+				}
+				rowSegmentIndexStart[i + 1] = rowSegmentIndexEnd[i] + 1;
+			}
+			rowSegmentIndexEnd[threadCount - 1] = this->rowCount - 1;
+
+			//start threads
+			std::vector<std::thread> threads;
+			for (i = 0; i < threadCount; i++) {
+				threads.push_back(std::thread(&CMatrix<T>::threadMultiplyConstantOperation, &*this, std::ref(retMatrix),
+					rowSegmentIndexStart[i], rowSegmentIndexEnd[i], multiplier));
+			}
+
+			delete[] rowSegmentIndexStart;
+			delete[] rowSegmentIndexEnd;
+
+			for (i = 0; i < threads.size(); i++) {
+				threads[i].join();
 			}
 		}
+
 		return std::move(retMatrix);
 	}
 
@@ -338,7 +381,7 @@ namespace MyAlgebra
 			columnSegmentIndexStart[0] = 0;
 			for (i = 0; i < threadCount - 1; i++) {
 				if (remainderColumns > 0) {
-					columnSegmentIndexEnd[i] = (other.columnCount -1) / threadCount + columnSegmentIndexStart[i];
+					columnSegmentIndexEnd[i] = (other.columnCount - 1) / threadCount + columnSegmentIndexStart[i];
 					remainderColumns--;
 				}
 				else {
@@ -354,7 +397,7 @@ namespace MyAlgebra
 				threads.push_back(std::thread(&CMatrix<T>::threadMultiplyOperation, &*this, std::ref(retMatrix), std::ref(other),
 					columnSegmentIndexStart[i], columnSegmentIndexEnd[i]));
 			}
-			
+
 			delete[] columnSegmentIndexStart;
 			delete[] columnSegmentIndexEnd;
 
@@ -365,6 +408,63 @@ namespace MyAlgebra
 
 		return std::move(retMatrix);
 	}
+
+	template <typename T>
+	CMatrix<T> CMatrix<T>::addMatrixOperation(const CMatrix<T>& other)const {
+		if (!equalDimensions(other)) {
+			throw DimensionMismatchException(OP_ADD, getDims(), other.getDims());
+		}
+
+		CMatrix<T> retMatrix(*this);
+
+		if (!isInitialized(retMatrix)) {
+			throw MatrixNotInitialized(OP_ADD);
+		}
+
+		if (MAX_THREAD_COUNT < 2 || MIN_CELLS_FOR_MULTITHREADING_IN_SIMPLE_OPS < (long)rowCount * columnCount) {
+			threadAddOperation(retMatrix, other, 0, other.rowCount - 1);
+		}
+		else {
+
+			int threadCount = (other.rowCount < MAX_THREAD_COUNT ? other.rowCount : MAX_THREAD_COUNT);
+
+			int* rowSegmentIndexStart = new int[threadCount];
+			int* rowSegmentIndexEnd = new int[threadCount];
+
+			//equally distribute columns among threads
+			int i;
+			int remainderRows = other.rowCount % threadCount;
+			rowSegmentIndexStart[0] = 0;
+			for (i = 0; i < threadCount - 1; i++) {
+				if (remainderRows > 0) {
+					rowSegmentIndexEnd[i] = (other.rowCount - 1) / threadCount + rowSegmentIndexStart[i];
+					remainderRows--;
+				}
+				else {
+					rowSegmentIndexEnd[i] = (other.rowCount - 1) / threadCount + rowSegmentIndexStart[i] - 1;
+				}
+				rowSegmentIndexStart[i + 1] = rowSegmentIndexEnd[i] + 1;
+			}
+			rowSegmentIndexEnd[threadCount - 1] = other.rowCount - 1;
+
+			//start threads
+			std::vector<std::thread> threads;
+			for (i = 0; i < threadCount; i++) {
+				threads.push_back(std::thread(&CMatrix<T>::threadAddOperation, &*this, std::ref(retMatrix), std::ref(other),
+					rowSegmentIndexStart[i], rowSegmentIndexEnd[i]));
+			}
+
+			delete[] rowSegmentIndexStart;
+			delete[] rowSegmentIndexEnd;
+
+			for (i = 0; i < threads.size(); i++) {
+				threads[i].join();
+			}
+		}
+		return std::move(retMatrix);
+	}
+
+
 	template <typename T>
 	CMatrix<T> CMatrix<T>::substractMatrixOperation(const CMatrix<T>& other) const {
 
@@ -378,9 +478,45 @@ namespace MyAlgebra
 			throw MatrixNotInitialized(OP_SUBSTRACT);
 		}
 
-		for (int i = 0, j; i < rowCount; i++) {
-			for (j = 0; j < columnCount; j++) {
-				retMatrix.rowPtr[i][j] -= other.rowPtr[i][j];
+
+		if (MAX_THREAD_COUNT < 2 || MIN_CELLS_FOR_MULTITHREADING_IN_SIMPLE_OPS < (long)rowCount * columnCount) {
+			threadSubstractOperation(retMatrix, other, 0, other.rowCount - 1);
+		}
+		else {
+
+			int threadCount = (other.rowCount < MAX_THREAD_COUNT ? other.rowCount : MAX_THREAD_COUNT);
+
+			int* rowSegmentIndexStart = new int[threadCount];
+			int* rowSegmentIndexEnd = new int[threadCount];
+
+			//equally distribute columns among threads
+			int i;
+			int remainderRows = other.rowCount % threadCount;
+			rowSegmentIndexStart[0] = 0;
+			for (i = 0; i < threadCount - 1; i++) {
+				if (remainderRows > 0) {
+					rowSegmentIndexEnd[i] = (other.rowCount - 1) / threadCount + rowSegmentIndexStart[i];
+					remainderRows--;
+				}
+				else {
+					rowSegmentIndexEnd[i] = (other.rowCount - 1) / threadCount + rowSegmentIndexStart[i] - 1;
+				}
+				rowSegmentIndexStart[i + 1] = rowSegmentIndexEnd[i] + 1;
+			}
+			rowSegmentIndexEnd[threadCount - 1] = other.rowCount - 1;
+
+			//start threads
+			std::vector<std::thread> threads;
+			for (i = 0; i < threadCount; i++) {
+				threads.push_back(std::thread(&CMatrix<T>::threadSubstractOperation, &*this, std::ref(retMatrix), std::ref(other),
+					rowSegmentIndexStart[i], rowSegmentIndexEnd[i]));
+			}
+
+			delete[] rowSegmentIndexStart;
+			delete[] rowSegmentIndexEnd;
+
+			for (i = 0; i < threads.size(); i++) {
+				threads[i].join();
 			}
 		}
 		return std::move(retMatrix);
@@ -395,11 +531,8 @@ namespace MyAlgebra
 			throw MatrixNotInitialized(OP_UNARY);
 		}
 
-		for (int i = 0, j; i < rowCount; i++) {
-			for (j = 0; j < columnCount; j++) {
-				retMatrix.rowPtr[i][j] *= (-1);
-			}
-		}
+		threadMultiplyConstantOperation(retMatrix, 0, this->rowCount - 1, -1);
+
 		return std::move(retMatrix);
 	}
 
