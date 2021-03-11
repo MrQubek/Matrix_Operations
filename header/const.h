@@ -5,16 +5,23 @@
 // =========================================================================
 
 #define MAX_THREAD_COUNT 4
-#define MIN_CELLS_FOR_MULTITHREADING_IN_SIMPLE_OPS 25
+
+// number of cells in matrix is defined as rowCount * columnCount
+#define MIN_CELLS_FOR_MULTITHREADING_IN_SIMPLE_OPS 25000000
 
 #define MAX_COMPARE_ERROR 1e-6f
 
-// 0 - no limits on value of generated random numbers
-// 1 - value of generated random numbers constrained by RANDOM_MIN_VALUE and RANDOM_MAX_VALUE
-#define LIMIT_MAX_RANDOM_VALUE 1
-#define RANDOM_MAX_VALUE 2
-#define RANDOM_MIN_VALUE 0
+// 1 - value of generated random numbers constrained by CUSTOM_RANDOM_MIN_VALUE and CUSTOM_RANDOM_MAX_VALUE.
+// 0 - default limits on value of generated random numbers:
+//		int - [std::numeric_limits<int>::min(), std::numeric_limits<int>::max()]
+//		float - [-FLT_MAX/2, FLT_MAX/2]
+//		double - [-DBL_MAX/2, DBL_MAX/2]
+#define CUSTOM_LIMITS_ON_RANDOM_VALUES 0
 
+#define CUSTOM_RANDOM_MAX_VALUE 1000
+#define CUSTOM_RANDOM_MIN_VALUE -1000
+
+// length of SIMD vectors
 #define SIMD_INT_LENGTH 8
 #define SIMD_FLOAT_LENGTH 8
 #define SIMD_DOUBLE_LENGTH 4

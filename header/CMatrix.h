@@ -324,11 +324,11 @@ namespace MyAlgebra
 			rowSegmentIndexStart[0] = 0;
 			for (i = 0; i < threadCount - 1; i++) {
 				if (remainderRows > 0) {
-					rowSegmentIndexEnd[i] = (this->rowCount - 1) / threadCount + rowSegmentIndexStart[i];
+					rowSegmentIndexEnd[i] = (this->rowCount ) / threadCount + rowSegmentIndexStart[i];
 					remainderRows--;
 				}
 				else {
-					rowSegmentIndexEnd[i] = (this->rowCount - 1) / threadCount + rowSegmentIndexStart[i] - 1;
+					rowSegmentIndexEnd[i] = (this->rowCount ) / threadCount + rowSegmentIndexStart[i] - 1;
 				}
 				rowSegmentIndexStart[i + 1] = rowSegmentIndexEnd[i] + 1;
 			}
@@ -381,11 +381,11 @@ namespace MyAlgebra
 			columnSegmentIndexStart[0] = 0;
 			for (i = 0; i < threadCount - 1; i++) {
 				if (remainderColumns > 0) {
-					columnSegmentIndexEnd[i] = (other.columnCount - 1) / threadCount + columnSegmentIndexStart[i];
+					columnSegmentIndexEnd[i] = (other.columnCount ) / threadCount + columnSegmentIndexStart[i];
 					remainderColumns--;
 				}
 				else {
-					columnSegmentIndexEnd[i] = (other.columnCount - 1) / threadCount + columnSegmentIndexStart[i] - 1;
+					columnSegmentIndexEnd[i] = (other.columnCount ) / threadCount + columnSegmentIndexStart[i] - 1;
 				}
 				columnSegmentIndexStart[i + 1] = columnSegmentIndexEnd[i] + 1;
 			}
@@ -437,11 +437,11 @@ namespace MyAlgebra
 			rowSegmentIndexStart[0] = 0;
 			for (i = 0; i < threadCount - 1; i++) {
 				if (remainderRows > 0) {
-					rowSegmentIndexEnd[i] = (other.rowCount - 1) / threadCount + rowSegmentIndexStart[i];
+					rowSegmentIndexEnd[i] = (other.rowCount ) / threadCount + rowSegmentIndexStart[i];
 					remainderRows--;
 				}
 				else {
-					rowSegmentIndexEnd[i] = (other.rowCount - 1) / threadCount + rowSegmentIndexStart[i] - 1;
+					rowSegmentIndexEnd[i] = (other.rowCount ) / threadCount + rowSegmentIndexStart[i] - 1;
 				}
 				rowSegmentIndexStart[i + 1] = rowSegmentIndexEnd[i] + 1;
 			}
@@ -495,11 +495,11 @@ namespace MyAlgebra
 			rowSegmentIndexStart[0] = 0;
 			for (i = 0; i < threadCount - 1; i++) {
 				if (remainderRows > 0) {
-					rowSegmentIndexEnd[i] = (other.rowCount - 1) / threadCount + rowSegmentIndexStart[i];
+					rowSegmentIndexEnd[i] = (other.rowCount ) / threadCount + rowSegmentIndexStart[i];
 					remainderRows--;
 				}
 				else {
-					rowSegmentIndexEnd[i] = (other.rowCount - 1) / threadCount + rowSegmentIndexStart[i] - 1;
+					rowSegmentIndexEnd[i] = (other.rowCount ) / threadCount + rowSegmentIndexStart[i] - 1;
 				}
 				rowSegmentIndexStart[i + 1] = rowSegmentIndexEnd[i] + 1;
 			}

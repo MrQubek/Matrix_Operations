@@ -1,98 +1,115 @@
 ﻿
-#include "simpleTests.h"
 
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 
-#include <iostream>
+#include <chrono>
 
 #include "CMatrix.h"
+#include "simpleTests.h"
 
-// W poniższym pliku - impelementacja referencyjna
-#include "RefAlgebra/CMtx.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-
-
-// ===================================================================
-// FUNKCJE DO POMIARU CZASU
-// ===================================================================
-
-#ifdef _WIN32
-#include <sys/timeb.h>
-#else
-#include <sys/time.h>
-#endif
-#include <time.h>
-#include <math.h>
-
-double mygettime(void) {
-# ifdef _WIN32
-	struct _timeb tb;
-	_ftime_s(&tb);	// W systemie 64-bitowym może zajść potrzeba zmiany nazwy funkcji na "_ftime64_s"
-	return (double)tb.time + (0.001 * (double)tb.millitm);
-# else
-	struct timeval tv;
-	if (gettimeofday(&tv, 0) < 0) {
-		perror("oops");
-	}
-	return (double)tv.tv_sec + (0.000001 * (double)tv.tv_usec);
-# endif
-}
-
-// ===================================================================
-// FUNKCJA OCENY CZASU WYKONANIA
-// ===================================================================
-
-// Definiujemy szablon aby łatwiej uruchamiać testy dla róznych implementacji
-// klasy. Różne implementacje będą umieszczone w różnych przestrzeniach nazw.
+// template function for showing speed of matrix operations.
+// description of constats:
+//		SIZE - size of matrixes.
+//		ITER_CNT - number of repetitions of operations in order get average operation time.
+//		DISPLAY_RESULTS - display matrix resulted from matrix operation.
+//		CONSTANT - consatnt used in multiplication by constant operation.
 template<typename T>
-double test()
-{
-	// Przykładowe testowe obliczenie macierzowe. Podobne obliczenia będą 
-	// używane do oceny efektywności implementacji w konkursie.
-	const int SIZE = 1000;
-	const int ITER_CNT = 10;
+void benchmark() {
+
+	const int SIZE = 2001;
+	const int ITER_CNT = 5;
+	const bool DISPLAY_RESULTS = false;
+	const int CONSTANT = 2;
 
 	T A(SIZE, SIZE, true);
 	T B(SIZE, SIZE, true);
-	T W(1, 1, false);
-	double t1 = mygettime();
+	T C(1, 1, false);
 
-	for (int i = 0; i < ITER_CNT; i++)
-	{
-		B = ((0.1f * i) * A + B * B) * 1.e-4f;
-		B = -B * ~(A + B);
+	try {
+		std::cout << "Size of matrixes: " << SIZE << "x" << SIZE << std::endl;
+
+		if (DISPLAY_RESULTS) {
+			std::cout << "Matrix A:\n";
+			A.display();
+			std::cout << "Matrix B:\n";
+			B.display();
+		}
+
+		std::cout << "Executing multiplying matrixes operation C = A * B."<<std::endl;
+		auto operationBeginTime = std::chrono::steady_clock::now();
+		for (int i = 0; i < ITER_CNT;i++) {
+			C = A * B;
+		}
+		auto operationEndTime = std::chrono::steady_clock::now();
+		std::chrono::duration<double> totalOperationTime = operationEndTime - operationBeginTime;
+		std::cout << "Average multiplication time: "<< totalOperationTime.count()/ITER_CNT << "s.\n";
+
+		if (DISPLAY_RESULTS) {
+			std::cout << "\nMatrix C\n";
+			C.display();
+			std::cout << std::endl;
+		}
+
+		std::cout << "Executing adding matrixes operation C = A + B." << std::endl;
+		operationBeginTime = std::chrono::steady_clock::now();
+		for (int i = 0; i < ITER_CNT; i++) {
+			C = A + B;
+		}
+		operationEndTime = std::chrono::steady_clock::now();
+		totalOperationTime = operationEndTime - operationBeginTime;
+		std::cout << "Average addition time: " << totalOperationTime.count() / ITER_CNT << "s.\n";
+
+		if (DISPLAY_RESULTS) {
+			std::cout << "\nMatrix C\n";
+			C.display();
+			std::cout << std::endl;
+		}
+
+		std::cout << "Executing substracting matrixes operation C = A - B." << std::endl;
+		operationBeginTime = std::chrono::steady_clock::now();
+		for (int i = 0; i < ITER_CNT; i++) {
+			C = A - B;
+		}
+		operationEndTime = std::chrono::steady_clock::now();
+		totalOperationTime = operationEndTime - operationBeginTime;
+		std::cout << "Average substraction time: " << totalOperationTime.count() / ITER_CNT << "s.\n";
+
+		if (DISPLAY_RESULTS) {
+			std::cout << "\nMatrix C\n";
+			C.display();
+			std::cout << std::endl;
+		}
+
+		std::cout << "Executing multiplication by constant operation C = A * CONSTANT." << std::endl;
+		operationBeginTime = std::chrono::steady_clock::now();
+		for (int i = 0; i < ITER_CNT; i++) {
+			C = A * CONSTANT;
+		}
+		operationEndTime = std::chrono::steady_clock::now();
+		totalOperationTime = operationEndTime - operationBeginTime;
+		std::cout << "Average  multiplication by constant time: " << totalOperationTime.count() / ITER_CNT << "s.\n";
+
+		if (DISPLAY_RESULTS) {
+			std::cout << "\nMatrix C\n";
+			C.display();
+			std::cout << std::endl;
+		}
+
+		std::cout << "Press any key to exit.\n";
+		std::cin.get();
 	}
-	W = (B + A);
-
-	double exec_time = mygettime() - t1;
-
-	//W.display();
-
-	return exec_time;
+	catch (std::exception& e) {
+		std::cout << "Exception captured in: " << e.what() << "\nAborting benchmark\n";
+	}
 }
 
 
 int main(int argc, char* argv[])
 {
-	if(1){
-	double t_prog = test<MyAlgebra::CMatrix<float>>();
-	double t_ref = 93;//test<RefAlgebra::CMtx>();
 
-	printf("Czas wykonania referencyjny: %7.2lfs\n", t_ref);
-	printf("Czas wykonania testowany:    %7.2lfs\n", t_prog);
-	printf("Wspolczynnik przyspieszenia Q: %5.2lf", t_ref / t_prog);
-	}
-	else {
-		try{
-		simpleTests();
-		}
-		catch (std::exception & e){
-			std::cout << e.what() << std::endl;
-		}
-	}
+	benchmark< MyAlgebra::CMatrix<int>>();
+
 	_CrtDumpMemoryLeaks();
 
 	return 0;

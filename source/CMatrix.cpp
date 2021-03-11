@@ -7,10 +7,10 @@ void MyAlgebra::CMatrix<int>::populateMatrixWithRandomNumbers() {
 	std::default_random_engine rndNrGenerator;
 	rndNrGenerator.seed(seed++);
 
-#if LIMIT_MAX_RANDOM_VALUE !=0
-	std::uniform_int_distribution<int> distribution(RANDOM_MIN_VALUE, RANDOM_MAX_VALUE);
+#if CUSTOM_LIMITS_ON_RANDOM_VALUES !=0
+	std::uniform_int_distribution<int> distribution(CUSTOM_RANDOM_MIN_VALUE, CUSTOM_RANDOM_MAX_VALUE);
 #else
-	std::uniform_int_distribution<int> distribution(0);
+	std::uniform_int_distribution<int> distribution(std::numeric_limits<int>::min());
 #endif
 
 	for (int i = 0, j; i < rowCount; i++) {
@@ -26,10 +26,10 @@ void MyAlgebra::CMatrix<float>::populateMatrixWithRandomNumbers() {
 	std::default_random_engine rndNrGenerator;
 	rndNrGenerator.seed(seed++);
 
-#if LIMIT_MAX_RANDOM_VALUE !=0
-	std::uniform_real_distribution<float> distribution(RANDOM_MIN_VALUE, RANDOM_MAX_VALUE);
+#if CUSTOM_LIMITS_ON_RANDOM_VALUES !=0
+	std::uniform_real_distribution<float> distribution(CUSTOM_RANDOM_MIN_VALUE, CUSTOM_RANDOM_MAX_VALUE);
 #else
-	std::uniform_real_distribution<float> distribution(0);
+	std::uniform_real_distribution<float> distribution(-FLT_MAX/2, FLT_MAX/2);
 #endif
 
 	for (int i = 0, j; i < rowCount; i++) {
@@ -45,10 +45,10 @@ void MyAlgebra::CMatrix<double>::populateMatrixWithRandomNumbers() {
 	std::default_random_engine rndNrGenerator;
 	rndNrGenerator.seed(seed++);
 
-#if LIMIT_MAX_RANDOM_VALUE !=0
-	std::uniform_real_distribution<double> distribution(RANDOM_MIN_VALUE, RANDOM_MAX_VALUE);
+#if CUSTOM_LIMITS_ON_RANDOM_VALUES !=0
+	std::uniform_real_distribution<double> distribution(CUSTOM_RANDOM_MIN_VALUE, CUSTOM_RANDOM_MAX_VALUE);
 #else
-	std::uniform_real_distribution<double> distribution(0);
+	std::uniform_real_distribution<double> distribution(-DBL_MAX/2, DBL_MAX/2);
 #endif
 
 	for (int i = 0, j = 0; i < rowCount; i++) {
