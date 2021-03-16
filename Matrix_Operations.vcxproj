@@ -166,7 +166,6 @@
     <ClInclude Include="header\FileError.h" />
     <ClInclude Include="header\MatrixError.h" />
     <ClInclude Include="header\MatrixException.h" />
-    <ClInclude Include="header\simpleTests.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

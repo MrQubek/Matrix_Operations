@@ -41,8 +41,5 @@
     <ClInclude Include="header\MatrixException.h">
       <Filter>Pliki źródłowe</Filter>
     </ClInclude>
-    <ClInclude Include="header\simpleTests.h">
-      <Filter>Pliki źródłowe</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

@@ -138,7 +138,7 @@ void MyAlgebra::CMatrix<int>::threadMultiplyOperation(
 
 	const int commonDimLength = this->getColumnCount();
 
-	int* otherColumnPtr = new int[commonDimLength];
+	auto otherColumnPtr = std::make_unique<int[]>(commonDimLength);
 
 	__m256i accVector;
 	int accArray[SIMD_INT_LENGTH];
@@ -170,7 +170,6 @@ void MyAlgebra::CMatrix<int>::threadMultiplyOperation(
 			retMatrix.rowPtr[i][otherColumnIndex] = accArray[0];
 		}
 	}
-	delete[] otherColumnPtr;
 }
 
 template <>
@@ -185,7 +184,7 @@ void MyAlgebra::CMatrix<float>::threadMultiplyOperation(
 
 	const int commonDimLength = this->getColumnCount();
 
-	float* otherColumnPtr = new float[commonDimLength];
+	auto otherColumnPtr = std::make_unique<float[]>(commonDimLength);
 
 	__m256 accVector;
 	float accArray[SIMD_FLOAT_LENGTH];
@@ -215,7 +214,6 @@ void MyAlgebra::CMatrix<float>::threadMultiplyOperation(
 			retMatrix.rowPtr[i][otherColumnIndex] = accArray[0];
 		}
 	}
-	delete[] otherColumnPtr;
 }
 
 template <>
@@ -229,7 +227,7 @@ void MyAlgebra::CMatrix<double>::threadMultiplyOperation(
 	int i, j, k;
 	const int commonDimLength = this->getColumnCount();
 
-	double* otherColumnPtr = new double[commonDimLength];
+	auto otherColumnPtr = std::make_unique<double[]>(commonDimLength);
 
 	__m256d accVector;
 	double accArray[SIMD_DOUBLE_LENGTH];
@@ -259,7 +257,6 @@ void MyAlgebra::CMatrix<double>::threadMultiplyOperation(
 			retMatrix.rowPtr[i][otherColumnIndex] = accArray[0];
 		}
 	}
-	delete[] otherColumnPtr;
 }
 
 template <>

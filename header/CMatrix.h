@@ -7,10 +7,10 @@
 #include <iostream>
 #include <fstream>
 #include <sstream> 
-#include <vector>
 
 #include <immintrin.h>
 #include <thread> 
+#include <memory>
 
 #include "const.h"
 #include "MatrixException.h"

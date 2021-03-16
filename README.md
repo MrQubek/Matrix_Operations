@@ -5,7 +5,7 @@ Template class which allows creation of matrixes and operations on them.
 * [General info](#general-info)
 * [Technologies](#technologies)
 * [Details about implementation](#details-about-implementation)
-* [Description of header files](#description-of-header-files)
+* [Content of header files](#content-of-header-files)
 * [Compilation](#compilation)
 * [Sources](#sources)
 
@@ -13,20 +13,25 @@ Template class which allows creation of matrixes and operations on them.
 ### General info
 The implementation uses threads and Intel AVX/AVX2 SIMD instructions in order to speed up calculation time. Move semantics is widely used in the project as well.
 
-Initially, the project was created as a part of passing the course of Techniques of Effective Programming (pol. Techinik Efektywnego Programowania). Multithreading and SIMD instructions have been added later in order to learn basics how to use them.
+Initially, the project was created in 2021 as a part of passing the course of Techniques of Effective Programming (pol. Techinik Efektywnego Programowania). Multithreading, SIMD instructions and a few smart pointers have been added later in order to learn basics how to use them.
 
 ### Technologies
 The project is created with:
 * Visual Studio 2019
 * Intel AVX/AVX2 instructions
 * Move semantics
-* C++11 Threads
 * Templates
+* C++11 Threads
+* Smart pointers
 
 ### Details about implementation
 Matrixes and operations (through class _CMatrix_) are defined for C++ types int, float and double. 
 
+##### Initialising a matrix
+
 The constructor _CMatrix(int rowCnt, int colCnt, bool randInit)_ initialises matrix by allocating a memory for it. If the "randInit" variable is true, the cells of matrix will be filled with uniformly distributed random numbers constrained by constants defined in header const.h; otherwise the cells will be left with unspecified values.
+
+##### Available mathematical operations
 
 The followig operations may be performed on the matrixes:
 * multiplication of matrixes
@@ -37,6 +42,8 @@ The followig operations may be performed on the matrixes:
 * transposition
 * exponentiation
 * dot product of two matrixes (defined as A<sup>T</sup>*B)
+
+##### Calling an operation
 
 Most operations are available through either functions or overloaded operators. When calling an operation by a function, the user has to pass a MatrixError object to a function. In case of an error (e.g. dimensions mismatch of matrixes), a function will return a zero matrix and it will put an error code into the MatrixError object (both defined in header MatrixError.h), whereas an overloaded operator will throw a custom exception (defined in header MatrixException.h).
 
@@ -68,14 +75,11 @@ FileError class and error codes dedicated malfunctions during reading matrix fro
 ##### MatrixError.h
 MatrixError class and error codes dedicated malfunctions during mathematical operations on matrixes are defined here. The error code is returned when an operation is called by a function. 
 
-
-In case of no malfunction present during an operation, the returned error code would be 
-
 ##### MatrixException.h
 Classes inheriting from std::exception dedicated malfunctions during mathematical operations on matrixes are defined here. An exception is thrown when an operation is called by overloaded operator.
 
 ### Compilation
-A benchmark has been prepeared in order to show the speed of calculation time of operations.  Build the project with MSBuild by executing command below in cmd:
+A benchmark has been prepeared in order to show the speed of calculation time of operations. Download the project to your local PC and build the project with MSBuild by executing command below in cmd in folder containing .sln file:
 
 ```
 MSBuild /nologo /v:n /p:Configuration=Release
